@@ -1,0 +1,166 @@
+import { useNavigate } from "react-router-dom";
+
+export default function Cart({
+    cart,
+    increaseQuantity,
+    decreaseQuantity
+}) {
+
+    const navigate = useNavigate();
+
+    // Calculate total amount
+    const totalAmount = cart.reduce(
+        (total, item) =>
+            total + Number(item.price) * item.quantity,
+        0
+    );
+
+    // Navigate to checkout
+    const handleCheckout = () => {
+        navigate("/customer/checkout");
+    };
+
+    return (
+
+        <div className="cart-page">
+
+            <h1 className="cart-title">
+                🛒 Your Cart
+            </h1>
+
+            {cart.length === 0 ? (
+
+                <div className="empty-cart">
+
+                    <h2>
+                        Your cart is empty 🌿
+                    </h2>
+
+                    <p>
+                        Add some herbs to your cart!
+                    </p>
+
+                    <button
+                        className="buy-items"
+                        onClick={() => navigate("/customer/shop")}
+                    >
+                        Continue Shopping
+                    </button>
+
+                </div>
+
+            ) : (
+
+                <>
+
+                    {/* CART ITEMS */}
+
+                    <div className="cart-items">
+
+                        {cart.map((item) => {
+
+                            const productId = item._id || item.id;
+
+                            return (
+
+                                <div
+                                    className="cart-item"
+                                    key={productId}
+                                >
+
+                                    <img
+                                        className="cart-item-image"
+                                        src={item.image}
+                                        alt={item.name}
+                                    />
+
+                                    <div className="cart-item-info">
+
+                                        <h2>
+                                            {item.name}
+                                        </h2>
+
+                                        <p>
+                                            {item.description}
+                                        </p>
+
+                                        <p>
+                                            Price: ₹
+                                            {Number(item.price).toFixed(2)}
+                                        </p>
+
+                                        {/* QUANTITY CONTROLS */}
+
+                                        <div className="quantity-controls">
+
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    decreaseQuantity(productId)
+                                                }
+                                                aria-label={`Decrease ${item.name} quantity`}
+                                            >
+                                                −
+                                            </button>
+
+                                            <span>
+                                                {item.quantity}
+                                            </span>
+
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    increaseQuantity(productId)
+                                                }
+                                                aria-label={`Increase ${item.name} quantity`}
+                                            >
+                                                +
+                                            </button>
+
+                                        </div>
+
+                                        <h3>
+                                            Subtotal: ₹
+                                            {(
+                                                Number(item.price) *
+                                                item.quantity
+                                            ).toFixed(2)}
+                                        </h3>
+
+                                    </div>
+
+                                </div>
+
+                            );
+
+                        })}
+
+                    </div>
+
+
+                    {/* CART TOTAL */}
+
+                    <div className="cart-page-total">
+
+                        <h2>
+                            Total Amount: ₹
+                            {totalAmount.toFixed(2)}
+                        </h2>
+
+                        <button
+                            className="buy-items"
+                            onClick={handleCheckout}
+                        >
+                            Proceed to Checkout
+                        </button>
+
+                    </div>
+
+                </>
+
+            )}
+
+        </div>
+
+    );
+}
