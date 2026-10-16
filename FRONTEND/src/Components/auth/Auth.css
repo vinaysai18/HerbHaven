@@ -1,3 +1,20 @@
+:root {
+    --forest-900: #183a29;
+    --forest-800: #214d2d;
+    --forest-700: #2d5d39;
+    --forest-600: #4d7f58;
+    --forest-500: #6da36e;
+    --sage-100: #edf8ef;
+    --sage-200: #deeedf;
+    --cream: #f6f4ef;
+    --panel: rgba(255, 255, 255, 0.96);
+    --text: #1e2d24;
+    --muted: #5e6d61;
+    --muted-strong: #3b4c3f;
+    --border: rgba(30, 60, 40, 0.12);
+    --shadow-soft: 0 18px 42px rgba(21, 54, 38, 0.14);
+    --shadow-card: 0 12px 28px rgba(21, 54, 38, 0.11);
+}
 
 * {
     box-sizing: border-box;
@@ -8,262 +25,136 @@ body,
 #root {
     margin: 0;
     padding: 0;
-
     width: 100%;
     min-height: 100%;
 }
 
-
-/* =====================================================
-   MAIN AUTH PAGE
-   ===================================================== */
-
 .auth-page {
     width: 100%;
     min-height: 100vh;
-
     display: flex;
-
     background-image: url("../../images/login.png");
     background-size: cover;
-
-    /*
-       Keep the center of the background visible.
-    */
     background-position: center center;
-
     background-repeat: no-repeat;
-
-    font-family: Arial, Helvetica, sans-serif;
-
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     overflow-x: hidden;
 }
-
-
-/* =====================================================
-   LEFT SIDE
-   ===================================================== */
 
 .auth-left {
     width: 57%;
     min-height: 100vh;
-
     display: flex;
     flex-direction: column;
-
-    /* Center everything horizontally */
     align-items: center;
-
     justify-content: flex-start;
-
     padding: 35px 30px 50px;
-
     background: transparent;
 }
 
-
-/* =====================================================
-   BRAND SECTION
-   ===================================================== */
-
 .brand-section {
     width: 100%;
-
     display: flex;
     flex-direction: column;
-
     align-items: center;
-
     text-align: center;
-
     margin: 0;
 }
 
-
-/* =====================================================
-   LOGO
-   ===================================================== */
 .brand-section img {
     width: 110px;
     height: 110px;
-
     object-fit: contain;
-
     display: block;
-
     margin: 0 auto 5px;
+    filter: drop-shadow(0 12px 22px rgba(23, 58, 41, 0.12));
 }
-
-
-/* =====================================================
-   HERBHAVEN TITLE
-   ===================================================== */
 
 .brand-section h1 {
     margin: 0;
-
-    font-size: 42px;
+    font-size: clamp(2.2rem, 2.8vw, 3rem);
     line-height: 1.1;
-
-    font-weight: 700;
-
-    letter-spacing: 1px;
-
-    color: #315c38;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: var(--forest-800);
 }
 
-
-/* =====================================================
-   TAGLINE
-   ===================================================== */
 .brand-section p {
     margin: 8px 0 0;
-
     font-size: 13px;
-
     letter-spacing: 2px;
-
-    color: #496b4e;
+    color: var(--forest-600);
+    text-transform: uppercase;
+    font-weight: 700;
 }
-
-
-/* =====================================================
-   WELCOME SECTION
-   ===================================================== */
 
 .welcome-section {
     width: 100%;
     max-width: 550px;
-
     margin: 105px 0 0;
-
     text-align: center;
 }
 
-
-/* =====================================================
-   WELCOME HEADING
-   ===================================================== */
 .welcome-section h2 {
     margin: 0 0 28px;
-
-    font-size: 42px;
-
+    font-size: clamp(2.2rem, 3vw, 3rem);
     line-height: 1.15;
-
-    font-weight: 600;
-
-    color: #244b2d;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    color: var(--forest-900);
 }
-
-
-/* =====================================================
-   WELCOME FEATURES
-   ===================================================== */
 
 .welcome-section p {
     margin: 13px 0;
-
     font-size: 16px;
-
-    line-height: 1.4;
-
-    color: #3f5e44;
+    line-height: 1.5;
+    color: var(--muted-strong);
 }
-
-
-/* =====================================================
-   RIGHT SIDE
-   ===================================================== */
 
 .auth-right {
     width: 43%;
     min-height: 100vh;
-
     display: flex;
-
     justify-content: center;
-
     align-items: flex-start;
-
     padding: 38px 35px 50px;
-
     background: transparent;
 }
 
-
-/* =====================================================
-   AUTH CARD
-   ===================================================== */
-
 .auth-card {
     width: 100%;
-
     max-width: 470px;
-
-    /*
-       Reduced padding so the register
-       form takes less vertical space.
-    */
     padding: 32px 40px;
-
     margin: 0 auto;
-
-    background: rgba(255, 255, 255, 0.95);
-
-    border-radius: 20px;
-
-    box-shadow:
-        0 15px 40px rgba(44, 76, 48, 0.18);
-
+    background: var(--panel);
+    border: 1px solid rgba(18, 46, 27, 0.08);
+    border-radius: 24px;
+    box-shadow: var(--shadow-soft);
     backdrop-filter: blur(8px);
-
-    /*
-       Makes sure padding is included
-       inside width.
-    */
     box-sizing: border-box;
 }
 
-
-/* =====================================================
-   AUTH HEADER
-   ===================================================== */
-
 .auth-header {
     text-align: center;
-
     margin-bottom: 22px;
 }
 
-
 .auth-header h1 {
     margin: 0;
-
     font-size: 30px;
-
     line-height: 1.2;
-
-    font-weight: 700;
-
-    color: #294f32;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: var(--forest-900);
 }
-
 
 .auth-header p {
     margin: 7px 0 0;
-
     font-size: 14px;
-
-    line-height: 1.4;
-
-    color: #718174;
+    line-height: 1.5;
+    color: var(--muted);
 }
 
-
-/* =====================================================
-   ROLE SECTION
-   ===================================================== */
 .role-section {
     width: 100%;
     margin-bottom: 18px;
@@ -271,457 +162,240 @@ body,
 
 .role-section label {
     display: block;
-
     margin-bottom: 7px;
-
     font-size: 14px;
-    font-weight: 600;
-
-    color: #405945;
+    font-weight: 700;
+    color: var(--muted-strong);
 }
-
-
-/* Dropdown */
 
 .role-section select {
     width: 100%;
     height: 46px;
-
     padding: 0 42px 0 15px;
-
-    border: 1px solid #c9d8cc;
-    border-radius: 10px;
-
-    background-color: #f8fbf8;
-
-    color: #314b35;
-
+    border: 1px solid rgba(99, 115, 103, 0.35);
+    border-radius: 12px;
+    background: #f9fbf9;
+    color: var(--text);
     font-size: 15px;
-    font-family: Arial, Helvetica, sans-serif;
-
+    font-family: inherit;
     outline: none;
-
     cursor: pointer;
-
     appearance: auto;
-
-    transition: all 0.2s ease;
+    transition: border 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
-
-
-/* Hover */
 
 .role-section select:hover {
-    border-color: #61966b;
-
-    background-color: #f3f8f4;
+    border-color: var(--forest-600);
+    background: #f4f9f4;
 }
-
-
-/* When dropdown is clicked */
 
 .role-section select:focus {
-    border-color: #4f8058;
-
-    background-color: white;
-
-    box-shadow:
-        0 0 0 3px rgba(79, 128, 88, 0.12);
+    border-color: var(--forest-600);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(79, 128, 88, 0.12);
 }
-
-
-/* Dropdown options */
 
 .role-section select option {
     padding: 10px;
-
     background: white;
-
-    color: #314b35;
-
+    color: var(--text);
     font-size: 14px;
 }
 
-
-/* Selected option */
-
 .role-section select option:checked {
-    background: #e5f0e7;
-
-    color: #315c38;
-
-    font-weight: 600;
+    background: #eaf4ec;
+    color: var(--forest-800);
+    font-weight: 700;
 }
-
-
-/* =====================================================
-   LOGIN / REGISTER TABS
-   ===================================================== */
 
 .auth-tabs {
     width: 100%;
-
     display: flex;
-
     gap: 8px;
-
     padding: 4px;
-
     margin-bottom: 20px;
-
     background: #edf4ee;
-
-    border-radius: 11px;
+    border-radius: 12px;
 }
-
-
-/* Both tab elements */
 
 .auth-tabs button,
 .auth-tabs .tab-link {
     flex: 1;
-
     height: 40px;
-
     padding: 8px;
-
     border: none;
-
-    border-radius: 8px;
-
+    border-radius: 10px;
     font-size: 14px;
-
-    font-weight: 600;
-
+    font-weight: 700;
     text-align: center;
-
     text-decoration: none;
-
     cursor: pointer;
-
     display: flex;
-
     align-items: center;
-
     justify-content: center;
-
     font-family: inherit;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
-
-
-/* =====================================================
-   ACTIVE LOGIN TAB
-   ===================================================== */
 
 .auth-tabs .active-tab {
-    background: #4f8058;
-
+    background: linear-gradient(135deg, var(--forest-800), var(--forest-700));
     color: white;
-
-    box-shadow:
-        0 3px 8px rgba(79, 128, 88, 0.20);
+    box-shadow: 0 6px 14px rgba(79, 128, 88, 0.2);
 }
-
-
-/* =====================================================
-   REGISTER TAB
-   ===================================================== */
 
 .auth-tabs .tab-link {
     background: transparent;
-
-    color: #4f8058;
+    color: var(--forest-700);
 }
 
-
-.auth-tabs .tab-link:hover {
-    background: #dfece1;
+.auth-tabs .tab-link:hover,
+.auth-tabs .tab-link:focus-visible {
+    background: rgba(79, 128, 88, 0.08);
+    outline: none;
 }
-
-
-/* =====================================================
-   FORM
-   ===================================================== */
 
 form {
     width: 100%;
-
     margin: 0;
-
     padding: 0;
 }
 
-
-/* =====================================================
-   INPUT GROUP
-   ===================================================== */
-
 .input-group {
     width: 100%;
-
     margin-bottom: 14px;
 }
 
-
 .input-group label {
     display: block;
-
     margin-bottom: 6px;
-
     font-size: 14px;
-
     line-height: 1.3;
-
-    font-weight: 600;
-
-    color: #405945;
+    font-weight: 700;
+    color: var(--muted-strong);
 }
-
-
-/* =====================================================
-   INPUT + TEXTAREA
-   ===================================================== */
 
 .input-group input,
 .input-group textarea {
     width: 100%;
-
     padding: 11px 14px;
-
-    border: 1px solid #d0dbd2;
-
-    border-radius: 10px;
-
+    border: 1px solid rgba(99, 115, 103, 0.35);
+    border-radius: 12px;
     background: #fbfdfb;
-
-    color: #304534;
-
+    color: var(--text);
     font-size: 14px;
-
     font-family: inherit;
-
     outline: none;
-
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease,
-        background 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
-
-
-/* =====================================================
-   INPUT
-   ===================================================== */
 
 .input-group input {
     height: 44px;
 }
 
-
-/* =====================================================
-   TEXTAREA
-   ===================================================== */
-
 .input-group textarea {
     min-height: 70px;
-
     resize: none;
 }
 
-
-/* =====================================================
-   PLACEHOLDER
-   ===================================================== */
-
 .input-group input::placeholder,
 .input-group textarea::placeholder {
-    color: #a2ada4;
+    color: #9aa59d;
 }
-
-
-/* =====================================================
-   INPUT FOCUS
-   ===================================================== */
 
 .input-group input:focus,
 .input-group textarea:focus {
-    border-color: #61966b;
-
+    border-color: var(--forest-600);
     background: white;
-
-    box-shadow:
-        0 0 0 3px rgba(97, 150, 107, 0.10);
+    box-shadow: 0 0 0 3px rgba(97, 150, 107, 0.1);
 }
-
-
-/* =====================================================
-   FORGOT PASSWORD
-   ===================================================== */
 
 .forgot-password {
     width: 100%;
-
     text-align: right;
-
     margin-top: -2px;
-
     margin-bottom: 17px;
 }
 
-
 .forgot-password a {
     font-size: 13px;
-
-    color: #4f8058;
-
+    color: var(--forest-700);
     text-decoration: none;
 }
 
-
-.forgot-password a:hover {
+.forgot-password a:hover,
+.forgot-password a:focus-visible {
     text-decoration: underline;
+    outline: none;
 }
-
-
-/* =====================================================
-   SUBMIT BUTTON
-   ===================================================== */
 
 .submit-btn {
     width: 100%;
-
     height: 47px;
-
     margin-top: 2px;
-
     padding: 0 15px;
-
     border: none;
-
-    border-radius: 10px;
-
-    background: #4f8058;
-
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--forest-800), var(--forest-700));
     color: white;
-
     font-size: 15px;
-
-    font-weight: 600;
-
+    font-weight: 700;
     font-family: inherit;
-
     cursor: pointer;
-
-    transition:
-        background 0.2s ease,
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
-
-    box-shadow:
-        0 6px 15px rgba(79, 128, 88, 0.20);
+    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 10px 22px rgba(79, 128, 88, 0.18);
 }
 
-
-.submit-btn:hover {
-    background: #3f6d47;
-
+.submit-btn:hover,
+.submit-btn:focus-visible {
+    background: linear-gradient(135deg, var(--forest-700), var(--forest-600));
     transform: translateY(-1px);
-
-    box-shadow:
-        0 8px 18px rgba(79, 128, 88, 0.25);
+    box-shadow: 0 12px 26px rgba(79, 128, 88, 0.22);
+    outline: none;
 }
-
 
 .submit-btn:active {
     transform: translateY(0);
 }
 
-
-/* =====================================================
-   FOOTER
-   ===================================================== */
-
 .auth-footer {
     width: 100%;
-
     text-align: center;
-
     margin-top: 18px;
 }
 
-
 .auth-footer p {
     margin: 0;
-
     font-size: 13px;
-
     line-height: 1.4;
-
-    color: #7a867c;
+    color: #748175;
 }
 
-
 .auth-footer a {
-    color: #4f8058;
-
-    font-weight: 600;
-
+    color: var(--forest-700);
+    font-weight: 700;
     text-decoration: none;
 }
 
-
-.auth-footer a:hover {
+.auth-footer a:hover,
+.auth-footer a:focus-visible {
     text-decoration: underline;
+    outline: none;
 }
-
-
-/* =====================================================
-   REGISTER PAGE
-   ===================================================== */
-
-/*
-   Register has:
-   Name
-   Email
-   Phone
-   Address
-   Password
-   Confirm Password
-
-   Therefore reduce spacing slightly.
-*/
 
 .register-form .input-group {
     margin-bottom: 10px;
 }
 
-
-/* =====================================================
-   REGISTER TEXTAREA
-   ===================================================== */
-
 .register-form textarea {
     height: 65px;
-
     min-height: 65px;
 }
-
-
-/* =====================================================
-   REGISTER BUTTON
-   ===================================================== */
 
 .register-form .submit-btn {
     margin-top: 4px;
 }
 
-
-/* =====================================================
-   LARGE SCREENS
-   ===================================================== */
-
 @media (min-width: 1400px) {
-
     .auth-left {
         padding-left: 45px;
     }
@@ -732,7 +406,6 @@ form {
 
     .welcome-section {
         margin-left: 70px;
-
         margin-top: 105px;
     }
 
@@ -745,22 +418,14 @@ form {
     }
 }
 
-
-/* =====================================================
-   MEDIUM SCREEN
-   ===================================================== */
-
 @media (max-width: 1100px) {
-
     .auth-left {
         width: 54%;
-
         padding-left: 25px;
     }
 
     .auth-right {
         width: 46%;
-
         padding-left: 25px;
         padding-right: 25px;
     }
@@ -771,7 +436,6 @@ form {
 
     .welcome-section {
         margin-left: 30px;
-
         margin-top: 90px;
     }
 
@@ -788,189 +452,129 @@ form {
     }
 }
 
-
-/* =====================================================
-   TABLET
-   ===================================================== */
-
 @media (max-width: 900px) {
-
     .auth-page {
         flex-direction: column;
-
         background-position: center top;
     }
 
-
-    /* LEFT */
-
     .auth-left {
         width: 100%;
-
         min-height: 380px;
-
         padding: 35px 30px;
     }
-
 
     .brand-section {
         margin-left: 20px;
     }
 
-
     .welcome-section {
         margin-top: 65px;
-
         margin-left: 20px;
     }
-
 
     .welcome-section h2 {
         font-size: 34px;
     }
 
-
-    /* RIGHT */
-
     .auth-right {
         width: 100%;
-
         min-height: auto;
-
         padding: 30px 25px 50px;
-
         align-items: flex-start;
     }
 
-
     .auth-card {
         max-width: 520px;
-
         margin: 0 auto;
     }
 }
 
-
-/* =====================================================
-   MOBILE
-   ===================================================== */
-
 @media (max-width: 600px) {
-
     .auth-left {
         min-height: 330px;
-
         padding: 30px 20px;
     }
-
 
     .brand-section {
         margin-left: 10px;
     }
 
-
     .brand-section img {
         width: 85px;
         height: 85px;
-
         margin-left: 5px;
     }
-
 
     .brand-section h1 {
         font-size: 32px;
     }
 
-
     .brand-section p {
         font-size: 10px;
-
         letter-spacing: 1.5px;
     }
 
-
     .welcome-section {
         margin-top: 50px;
-
         margin-left: 10px;
     }
-
 
     .welcome-section h2 {
         font-size: 30px;
     }
 
-
     .welcome-section p {
         font-size: 14px;
     }
-
 
     .auth-right {
         padding: 20px 15px 35px;
     }
 
-
     .auth-card {
         padding: 26px 20px;
-
         border-radius: 17px;
     }
-
 
     .auth-header h1 {
         font-size: 26px;
     }
 }
 
-
-/* =====================================================
-   SMALL MOBILE
-   ===================================================== */
-
 @media (max-width: 400px) {
-
     .auth-left {
         min-height: 300px;
-
         padding: 25px 15px;
     }
-
 
     .brand-section h1 {
         font-size: 29px;
     }
 
-
     .brand-section p {
         font-size: 9px;
     }
-
 
     .welcome-section {
         margin-top: 40px;
     }
 
-
     .welcome-section h2 {
         font-size: 27px;
     }
-
 
     .auth-card {
         padding: 23px 17px;
     }
 
-
     .auth-header h1 {
         font-size: 24px;
     }
 
-
     .input-group input {
         height: 42px;
     }
-
 
     .submit-btn {
         height: 45px;

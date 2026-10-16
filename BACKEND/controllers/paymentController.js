@@ -6,6 +6,10 @@ const Razorpay = require("razorpay");
 const Order = require("../models/Order");
 const Product = require("../models/Product");
 
+// Support common authentication middleware user ID formats.
+const getAuthenticatedUserId = (req) =>
+  req.user?._id || req.userId || req.user?.id;
+
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
@@ -15,6 +19,13 @@ const razorpay = new Razorpay({
 const createPaymentOrder = async (req, res) => {
   try {
     const { items, deliveryAddress } = req.body;
+    const userId = getAuthenticatedUserId(req);
+
+    if (!userId || !mongoose.isValidObjectId(userId)) {
+      return res.status(401).json({
+        message: "User authentication failed. Please log in again.",
+      });
+    }
 
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ message: "Cart is empty." });
@@ -26,15 +37,32 @@ const createPaymentOrder = async (req, res) => {
       });
     }
 
+    if (
+      !process.env.RAZORPAY_KEY_ID ||
+      !process.env.RAZORPAY_KEY_SECRET
+    ) {
+      return res.status(500).json({
+        message: "Razorpay configuration is missing.",
+      });
+    }
+
     let totalAmount = 0;
     const validatedItems = [];
 
     for (const item of items) {
-      const product = await Product.findById(item.product);
+      const productId = item.productId || item.product || item._id;
+
+      if (!mongoose.isValidObjectId(productId)) {
+        return res.status(400).json({
+          message: `Invalid product ID: ${productId || "missing"}`,
+        });
+      }
+
+      const product = await Product.findById(productId);
 
       if (!product) {
         return res.status(404).json({
-          message: `Product not found: ${item.product}`,
+          message: `Product not found: ${productId}`,
         });
       }
 
@@ -50,7 +78,7 @@ const createPaymentOrder = async (req, res) => {
 
       if (!Number.isFinite(price) || price < 0) {
         return res.status(400).json({
-          message: "Invalid product price.",
+          message: `Invalid price for product: ${product.name}`,
         });
       }
 
@@ -58,8 +86,10 @@ const createPaymentOrder = async (req, res) => {
 
       validatedItems.push({
         product: product._id,
-        quantity,
+        name: product.name,
         price,
+        quantity,
+        image: product.image || "",
       });
     }
 
@@ -76,7 +106,7 @@ const createPaymentOrder = async (req, res) => {
     });
 
     const order = await Order.create({
-      user: req.user._id,
+      user: userId,
       items: validatedItems,
       deliveryAddress,
       totalAmount,
@@ -90,20 +120,27 @@ const createPaymentOrder = async (req, res) => {
     return res.status(201).json({
       message: "Payment order created successfully.",
       order,
+      orderId: order._id,
       razorpayOrderId: razorpayOrder.id,
       amount: razorpayOrder.amount,
       currency: razorpayOrder.currency,
+      keyId: process.env.RAZORPAY_KEY_ID,
       key: process.env.RAZORPAY_KEY_ID,
     });
   } catch (error) {
     console.error("Create payment order error:", error);
+
     return res.status(500).json({
       message: "Unable to create payment order.",
+      error:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : undefined,
     });
   }
 };
 
-// Verify the Razorpay payment signature.
+// Verify Razorpay payment.
 const verifyPayment = async (req, res) => {
   try {
     const {
@@ -112,6 +149,14 @@ const verifyPayment = async (req, res) => {
       razorpay_signature,
     } = req.body;
 
+    const userId = getAuthenticatedUserId(req);
+
+    if (!userId || !mongoose.isValidObjectId(userId)) {
+      return res.status(401).json({
+        message: "User authentication failed. Please log in again.",
+      });
+    }
+
     if (
       !razorpay_order_id ||
       !razorpay_payment_id ||
@@ -119,6 +164,12 @@ const verifyPayment = async (req, res) => {
     ) {
       return res.status(400).json({
         message: "Payment verification details are missing.",
+      });
+    }
+
+    if (!process.env.RAZORPAY_KEY_SECRET) {
+      return res.status(500).json({
+        message: "Razorpay configuration is missing.",
       });
     }
 
@@ -141,17 +192,20 @@ const verifyPayment = async (req, res) => {
 
     const order = await Order.findOne({
       razorpayOrderId: razorpay_order_id,
-      user: req.user._id,
+      user: userId,
     });
 
     if (!order) {
-      return res.status(404).json({ message: "Order not found." });
+      return res.status(404).json({
+        message: "Order not found.",
+      });
     }
 
     if (order.paymentStatus === "Paid") {
       if (order.razorpayPaymentId === razorpay_payment_id) {
         return res.status(200).json({
           message: "Payment was already verified.",
+          success: true,
           order,
         });
       }
@@ -161,8 +215,7 @@ const verifyPayment = async (req, res) => {
       });
     }
 
-    // Confirm payment details with Razorpay rather than trusting
-    // only the browser callback.
+    // Verify the payment directly with Razorpay.
     const payment = await razorpay.payments.fetch(razorpay_payment_id);
 
     if (
@@ -184,12 +237,18 @@ const verifyPayment = async (req, res) => {
 
     return res.status(200).json({
       message: "Payment verified successfully.",
+      success: true,
       order,
     });
   } catch (error) {
     console.error("Verify payment error:", error);
+
     return res.status(500).json({
       message: "Payment verification failed.",
+      error:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : undefined,
     });
   }
 };
@@ -198,22 +257,35 @@ const verifyPayment = async (req, res) => {
 const retryPayment = async (req, res) => {
   try {
     const { orderId } = req.params;
+    const userId = getAuthenticatedUserId(req);
+
+    if (!userId || !mongoose.isValidObjectId(userId)) {
+      return res.status(401).json({
+        message: "User authentication failed. Please log in again.",
+      });
+    }
 
     if (!mongoose.isValidObjectId(orderId)) {
-      return res.status(400).json({ message: "Invalid order ID." });
+      return res.status(400).json({
+        message: "Invalid order ID.",
+      });
     }
 
     const order = await Order.findOne({
       _id: orderId,
-      user: req.user._id,
+      user: userId,
     });
 
     if (!order) {
-      return res.status(404).json({ message: "Order not found." });
+      return res.status(404).json({
+        message: "Order not found.",
+      });
     }
 
-    if (order.paymentStatus === "Paid" ||
-        order.paymentStatus === "Refunded") {
+    if (
+      order.paymentStatus === "Paid" ||
+      order.paymentStatus === "Refunded"
+    ) {
       return res.status(400).json({
         message: "This order cannot be paid for again.",
       });
@@ -225,7 +297,10 @@ const retryPayment = async (req, res) => {
       });
     }
 
-    if (order.status === "Cancelled" || order.status === "Returned") {
+    if (
+      order.status === "Cancelled" ||
+      order.status === "Returned"
+    ) {
       return res.status(400).json({
         message: "Cancelled or returned orders cannot be paid for.",
       });
@@ -245,32 +320,43 @@ const retryPayment = async (req, res) => {
     return res.status(200).json({
       message: "Retry payment order created.",
       order,
+      orderId: order._id,
       razorpayOrderId: razorpayOrder.id,
       amount: razorpayOrder.amount,
       currency: razorpayOrder.currency,
+      keyId: process.env.RAZORPAY_KEY_ID,
       key: process.env.RAZORPAY_KEY_ID,
     });
   } catch (error) {
     console.error("Retry payment error:", error);
+
     return res.status(500).json({
       message: "Unable to retry payment.",
+      error:
+        process.env.NODE_ENV === "development"
+          ? error.message
+          : undefined,
     });
   }
 };
 
-// Admin processes the refund after a return request has been approved.
+// Admin processes a refund after a return request has been approved.
 const processReturnRefund = async (req, res) => {
   try {
     const { orderId } = req.params;
 
     if (!mongoose.isValidObjectId(orderId)) {
-      return res.status(400).json({ message: "Invalid order ID." });
+      return res.status(400).json({
+        message: "Invalid order ID.",
+      });
     }
 
     const order = await Order.findById(orderId);
 
     if (!order) {
-      return res.status(404).json({ message: "Order not found." });
+      return res.status(404).json({
+        message: "Order not found.",
+      });
     }
 
     if (order.returnRequest?.status !== "Approved") {
@@ -294,8 +380,10 @@ const processReturnRefund = async (req, res) => {
       });
     }
 
-    if (order.refundStatus === "Processed" ||
-        order.paymentStatus === "Refunded") {
+    if (
+      order.refundStatus === "Processed" ||
+      order.paymentStatus === "Refunded"
+    ) {
       return res.status(409).json({
         message: "This order has already been refunded.",
       });
@@ -310,8 +398,7 @@ const processReturnRefund = async (req, res) => {
       });
     }
 
-    // Atomically claim the refund so two admin requests cannot
-    // initiate refunds for the same order at the same time.
+    // Claim the refund before calling Razorpay to avoid duplicate requests.
     const claimedOrder = await Order.findOneAndUpdate(
       {
         _id: order._id,
@@ -342,7 +429,8 @@ const processReturnRefund = async (req, res) => {
           amount: Math.round(claimedOrder.totalAmount * 100),
           notes: {
             orderId: claimedOrder._id.toString(),
-            reason: claimedOrder.returnRequest.reason || "Approved return",
+            reason:
+              claimedOrder.returnRequest.reason || "Approved return",
           },
         }
       );
@@ -369,8 +457,7 @@ const processReturnRefund = async (req, res) => {
     } catch (refundError) {
       console.error("Razorpay refund API error:", refundError);
 
-      // Keep Processing if the API result is uncertain. Automatically
-      // retrying could create a duplicate refund. Reconcile with Razorpay.
+      // Do not automatically retry an uncertain refund request.
       return res.status(502).json({
         message:
           "The refund result could not be confirmed. Check Razorpay before retrying.",
@@ -378,13 +465,14 @@ const processReturnRefund = async (req, res) => {
     }
   } catch (error) {
     console.error("Process return refund error:", error);
+
     return res.status(500).json({
       message: "Unable to process refund.",
     });
   }
 };
 
-// Razorpay webhook: synchronize asynchronous refund status changes.
+// Razorpay webhook for asynchronous refund status updates.
 const handleRazorpayWebhook = async (req, res) => {
   try {
     const signature = req.headers["x-razorpay-signature"];
@@ -444,8 +532,11 @@ const handleRazorpayWebhook = async (req, res) => {
     });
 
     if (!order) {
-      // Acknowledge unknown payments to avoid endless retries.
-      console.warn("No order found for refund payment:", refund.payment_id);
+      console.warn(
+        "No order found for refund payment:",
+        refund.payment_id
+      );
+
       return res.status(200).json({
         message: "No matching order found.",
       });
@@ -453,12 +544,13 @@ const handleRazorpayWebhook = async (req, res) => {
 
     if (order.refundId && order.refundId !== refund.id) {
       console.error("Refund ID mismatch for order:", order._id);
+
       return res.status(200).json({
         message: "Refund ID mismatch requires manual review.",
       });
     }
 
-    // Do not let a delayed event reverse an already completed refund.
+    // Do not let delayed events reverse a completed refund.
     if (
       order.refundStatus === "Processed" &&
       event.event !== "refund.processed"
