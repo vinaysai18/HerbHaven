@@ -8,7 +8,7 @@ export default function ProductCard({ herb, onDelete, onEdit }) {
                 src={
                     herb.image?.startsWith("http")
                         ? herb.image
-                        : `http://localhost:5000${herb.image}`
+                        : `https://herbhaven.onrender.com${herb.image}`
                 }
                 alt={herb.name}
                 className="product-image"

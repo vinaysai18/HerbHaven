@@ -91,7 +91,7 @@ export default function Checkout({ cart, clearCart }) {
       // CASH ON DELIVERY
       if (paymentMethod === "COD") {
         const response = await fetch(
-          "http://localhost:5000/api/orders",
+          "https://herbhaven.onrender.com/api/orders",
           {
             method: "POST",
             headers: {
@@ -142,7 +142,7 @@ export default function Checkout({ cart, clearCart }) {
       }
 
       const response = await fetch(
-        "http://localhost:5000/api/payments/create-order",
+        "https://herbhaven.onrender.com/api/payments/create-order",
         {
           method: "POST",
           headers: {
@@ -193,7 +193,7 @@ export default function Checkout({ cart, clearCart }) {
             setErrorMessage("");
 
             const verifyResponse = await fetch(
-              "http://localhost:5000/api/payments/verify",
+              "https://herbhaven.onrender.com/api/payments/verify",
               {
                 method: "POST",
                 headers: {

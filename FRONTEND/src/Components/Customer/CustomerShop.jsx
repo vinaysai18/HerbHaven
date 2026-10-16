@@ -17,7 +17,7 @@ export default function CustomerShop({ onAddtoCart }) {
                 const token = localStorage.getItem("token");
 
                 const response = await fetch(
-                    "http://localhost:5000/api/products",
+                    "https://herbhaven.onrender.com/api/products",
                     {
                         headers: {
                             Authorization: `Bearer ${token}`
@@ -103,7 +103,7 @@ export default function CustomerShop({ onAddtoCart }) {
                                     id: herb._id,
                                     image: herb.image?.startsWith("http")
                                         ? herb.image
-                                        : `http://localhost:5000${herb.image}`
+                                        : `https://herbhaven.onrender.com${herb.image}`
                                 }}
                                 onAddtoCart={onAddtoCart}
                             />

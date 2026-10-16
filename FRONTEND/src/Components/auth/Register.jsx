@@ -46,7 +46,7 @@ export default function Register() {
 
             try {
                 const response = await fetch(
-                    "http://localhost:5000/api/auth/register",
+                    "https://herbhaven.onrender.com/api/auth/register",
                     {
                         method: "POST",
                         headers: {

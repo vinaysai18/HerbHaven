@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 
-const API_URL = "http://localhost:5000/api/orders";
+const API_URL = "https://herbhaven.onrender.com/api/orders";
 
 export default function AdminReturnRequests() {
   const [orders, setOrders] = useState([]);

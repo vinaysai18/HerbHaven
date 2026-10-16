@@ -24,7 +24,7 @@ export default function AdminShop() {
                 const token = localStorage.getItem("token");
 
                 const response = await fetch(
-                    "http://localhost:5000/api/products",
+                    "https://herbhaven.onrender.com/api/products",
                     {
                         headers: {
                             Authorization: `Bearer ${token}`
@@ -111,8 +111,8 @@ export default function AdminShop() {
             const isEditing = editingId !== null;
 
             const url = isEditing
-                ? `http://localhost:5000/api/products/${editingId}`
-                : "http://localhost:5000/api/products";
+                ? `https://herbhaven.onrender.com/api/products/${editingId}`
+                : "https://herbhaven.onrender.com/api/products";
 
             const response = await fetch(url, {
                 method: isEditing ? "PUT" : "POST",
@@ -180,7 +180,7 @@ export default function AdminShop() {
             console.log("Token exists:", !!token);
 
             const response = await fetch(
-                `http://localhost:5000/api/products/${id}`,
+                `https://herbhaven.onrender.com/api/products/${id}`,
                 {
                     method: "DELETE",
                     headers: {
