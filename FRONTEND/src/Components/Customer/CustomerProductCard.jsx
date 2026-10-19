@@ -1,4 +1,11 @@
 export default function ProductCard({ herb, onAddtoCart }) {
+    const quantity = Number(herb.stockQuantity) || 0;
+    const threshold = Number(herb.lowStockThreshold ?? 5);
+    const status = quantity === 0
+        ? "Out of Stock"
+        : quantity <= threshold
+            ? "Low Stock"
+            : "In Stock";
 
     return (
         <div className="product-card">
@@ -12,6 +19,11 @@ export default function ProductCard({ herb, onAddtoCart }) {
 
                 <h2>{herb.name}</h2>
 
+                <span className={`customer-stock-status ${status.toLowerCase().replaceAll(" ", "-")}`}>
+                    {status}
+                    {status === "Low Stock" ? ` · ${quantity} left` : ""}
+                </span>
+
                 <p>{herb.description}</p>
 
                 <h3>
@@ -21,8 +33,9 @@ export default function ProductCard({ herb, onAddtoCart }) {
                 <button
                     className="add-to-cart"
                     onClick={() => onAddtoCart(herb)}
+                    disabled={quantity < 1}
                 >
-                    Add to Cart
+                    {quantity < 1 ? "Unavailable" : "Add to Cart"}
                 </button>
 
             </div>

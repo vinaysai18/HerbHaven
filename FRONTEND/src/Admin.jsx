@@ -5,6 +5,7 @@ import AdminShop from "./Components/Admin/AdminShop";
 import About from "./Components/Admin/AboutAdmin";
 import AdminOrders from "./Components/Admin/AdminOrders";
 import AdminReturnRequests from "./Components/Admin/AdminReturnRequests";
+import InventoryManagement from "./Components/Admin/InventoryManagement";
 import './Admin.css'
 export default function Admin() {
   return (
@@ -16,6 +17,7 @@ export default function Admin() {
         <Route path="about" element={<About/>}/>
         <Route path="orders" element={<AdminOrders />} />
         <Route path="return" element={<AdminReturnRequests/>}/>
+        <Route path="inventory" element={<InventoryManagement />} />
       </Routes>
     </>
     

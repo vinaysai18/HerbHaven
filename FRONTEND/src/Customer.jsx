@@ -19,12 +19,21 @@ export default function Customer() {
     function onAddtoCart(product) {
 
         const productId = product._id || product.id;
+        const available = Number(product.stockQuantity) || 0;
+        if (available < 1) {
+            window.alert("This item is currently out of stock.");
+            return;
+        }
 
         const existingProduct = cart.find(
             item => (item._id || item.id) === productId
         );
 
         if (existingProduct) {
+            if (existingProduct.quantity >= available) {
+                window.alert(`Only ${available} unit(s) are currently available.`);
+                return;
+            }
 
             setCart(previousCart =>
                 previousCart.map(item =>
@@ -56,6 +65,7 @@ export default function Customer() {
         setCart(previousCart =>
             previousCart.map(item =>
                 (item._id || item.id) === id
+                    && item.quantity < (Number(item.stockQuantity) || 0)
                     ? {
                         ...item,
                         quantity: item.quantity + 1
@@ -63,6 +73,11 @@ export default function Customer() {
                     : item
             )
         );
+
+        const item = cart.find((product) => (product._id || product.id) === id);
+        if (item && item.quantity >= (Number(item.stockQuantity) || 0)) {
+            window.alert(`Only ${item.stockQuantity || 0} unit(s) are currently available.`);
+        }
     }
 
     // Decrease quantity

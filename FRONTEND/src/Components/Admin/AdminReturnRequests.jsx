@@ -1,7 +1,8 @@
 
 import { useEffect, useState } from "react";
+import { API_URL } from "../../api";
 
-const API_URL = "https://herbhaven.onrender.com/api/orders";
+const ORDERS_URL = `${API_URL}/orders`;
 
 export default function AdminReturnRequests() {
   const [orders, setOrders] = useState([]);
@@ -16,7 +17,7 @@ export default function AdminReturnRequests() {
       setLoading(true);
       setError("");
 
-      const response = await fetch(`${API_URL}/admin/all`, {
+      const response = await fetch(`${ORDERS_URL}/admin/all`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -34,7 +35,10 @@ export default function AdminReturnRequests() {
 
       setOrders(
         allOrders.filter(
-          (order) => order.returnRequest?.status === "Requested"
+          (order) =>
+            order.returnRequest?.status === "Requested" ||
+            (["Approved", "Completed"].includes(order.returnRequest?.status) &&
+              !order.returnRequest?.receivedAt)
         )
       );
     } catch (err) {
@@ -44,8 +48,33 @@ export default function AdminReturnRequests() {
     }
   }
 
+  async function confirmReceived(orderId) {
+    try {
+      setProcessingId(orderId);
+      setError("");
+      setMessage("");
+      const response = await fetch(
+        `${ORDERS_URL}/admin/${orderId}/return-received`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Unable to confirm receipt.");
+      setMessage(data.message);
+      await fetchRequests();
+    } catch (err) {
+      setError(err.message || "Unable to confirm returned goods.");
+    } finally {
+      setProcessingId(null);
+    }
+  }
+
   useEffect(() => {
-    fetchRequests();
+    Promise.resolve().then(fetchRequests);
   }, []);
 
   async function reviewRequest(orderId, action) {
@@ -65,7 +94,7 @@ export default function AdminReturnRequests() {
       setMessage("");
 
       const response = await fetch(
-        `${API_URL}/admin/${orderId}/return-review`,
+        `${ORDERS_URL}/admin/${orderId}/return-review`,
         {
           method: "PUT",
           headers: {
@@ -218,6 +247,8 @@ export default function AdminReturnRequests() {
                 </div>
               </div>
 
+              {order.returnRequest.status === "Requested" ? (
+                <>
               <label
                 className="return-comment-label"
                 htmlFor={`return-comment-${order._id}`}
@@ -259,6 +290,22 @@ export default function AdminReturnRequests() {
                   Reject Return
                 </button>
               </div>
+                </>
+              ) : (
+                <div className="return-review-actions">
+                  <p>
+                    Confirm only after the returned items have been physically received.
+                  </p>
+                  <button
+                    type="button"
+                    className="return-approve-button"
+                    onClick={() => confirmReceived(order._id)}
+                    disabled={processingId === order._id}
+                  >
+                    {processingId === order._id ? "Processing..." : "Confirm receipt and restock"}
+                  </button>
+                </div>
+              )}
             </article>
           ))}
         </section>

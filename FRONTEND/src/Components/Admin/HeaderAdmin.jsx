@@ -1,7 +1,5 @@
 import {Link,useNavigate} from "react-router-dom";
 import logo from "../../images/logo.png";
-import cart from "../../images/cart.png";
-import {FaUser} from "react-icons/fa";
 export default function Header() {
     const navigate=useNavigate();
     const email=localStorage.getItem("email");
@@ -34,6 +32,7 @@ export default function Header() {
                 <Link to="/admin/about">About</Link>
                 <Link to="/admin/orders">View Orders</Link>
                 <Link to="/admin/return">View Returns</Link>
+                <Link to="/admin/inventory">Inventory</Link>
             </div>
 
             {/* <a className="cart" href="#">

@@ -1,7 +1,8 @@
 
 import { useCallback, useEffect, useState } from "react";
+import { API_URL } from "../../api";
 
-const API_URL = "https://herbhaven.onrender.com/api/orders";
+const ORDERS_URL = `${API_URL}/orders`;
 
 const STATUSES = [
   "Pending",
@@ -28,7 +29,7 @@ export default function AdminOrders() {
         throw new Error("Please log in as an admin.");
       }
 
-      const response = await fetch(`${API_URL}/admin/all`, {
+      const response = await fetch(`${ORDERS_URL}/admin/all`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -49,7 +50,7 @@ export default function AdminOrders() {
   }, []);
 
   useEffect(() => {
-    fetchOrders();
+    Promise.resolve().then(fetchOrders);
   }, [fetchOrders]);
 
   async function updateStatus(orderId, status) {
@@ -58,7 +59,7 @@ export default function AdminOrders() {
       setError("");
 
       const response = await fetch(
-        `${API_URL}/admin/${orderId}/status`,
+        `${ORDERS_URL}/admin/${orderId}/status`,
         {
           method: "PUT",
           headers: {

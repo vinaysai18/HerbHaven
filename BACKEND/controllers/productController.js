@@ -1,4 +1,6 @@
 const Product = require("../models/Product");
+const InventoryMovement = require("../models/InventoryMovement");
+const { isNonNegativeInteger } = require("../services/inventoryService");
 
 // ================= GET ALL PRODUCTS =================
 
@@ -18,14 +20,27 @@ const getProducts = async (req, res) => {
 
 const addProduct = async (req, res) => {
     try {
-        const { name, price, description } = req.body;
+        const { name, price, description, stockQuantity, lowStockThreshold, sku, category } = req.body;
 
-        if (!name || price === undefined || !description || !req.file) {
+        if (
+            typeof name !== "string" || !name.trim() ||
+            price === undefined ||
+            typeof description !== "string" || !description.trim() ||
+            !req.file
+        ) {
             return res.status(400).json({
                 message: "Name, price, description, and image are required."
             });
         }
 
+        if (
+            (typeof price !== "number" && typeof price !== "string") ||
+            (typeof price === "string" && !price.trim())
+        ) {
+            return res.status(400).json({
+                message: "Please provide a valid price."
+            });
+        }
         const numericPrice = Number(price);
 
         if (!Number.isFinite(numericPrice) || numericPrice < 0) {
@@ -34,18 +49,65 @@ const addProduct = async (req, res) => {
             });
         }
 
+        const isWholeNumberInput = (value) =>
+            (typeof value === "number" ||
+                (typeof value === "string" && /^\d+$/.test(value))) &&
+            isNonNegativeInteger(Number(value));
+        const initialStock = stockQuantity === undefined ? 0 : Number(stockQuantity);
+        const threshold = lowStockThreshold === undefined ? 5 : Number(lowStockThreshold);
+        if (
+            (stockQuantity !== undefined && !isWholeNumberInput(stockQuantity)) ||
+            (lowStockThreshold !== undefined && !isWholeNumberInput(lowStockThreshold)) ||
+            !isNonNegativeInteger(initialStock) ||
+            !isNonNegativeInteger(threshold)
+        ) {
+            return res.status(400).json({
+                message: "Stock and low-stock threshold must be non-negative whole numbers."
+            });
+        }
+        if (
+            (sku !== undefined && typeof sku !== "string") ||
+            (category !== undefined && typeof category !== "string") ||
+            (typeof sku === "string" && sku.trim().length > 100) ||
+            (typeof category === "string" && category.trim().length > 100)
+        ) {
+            return res.status(400).json({
+                message: "SKU and category must be text values."
+            });
+        }
+
         const product = await Product.create({
             name,
             price: numericPrice,
             description,
-            image: `/uploads/${req.file.filename}`
+            image: `/uploads/${req.file.filename}`,
+            stockQuantity: initialStock,
+            lowStockThreshold: threshold,
+            sku,
+            category: category || "Other"
         });
+
+        if (initialStock > 0) {
+            await InventoryMovement.create({
+                product: product._id,
+                quantityChange: initialStock,
+                previousQuantity: 0,
+                resultingQuantity: initialStock,
+                reason: "Initial stock",
+                performedBy: req.userId
+            });
+        }
 
         res.status(201).json({
             message: "Product added successfully!",
             product
         });
     } catch (error) {
+        if (error.code === 11000) {
+            return res.status(409).json({
+                message: "A product with this SKU already exists."
+            });
+        }
         res.status(500).json({
             message: "Failed to add product!",
             error: error.message

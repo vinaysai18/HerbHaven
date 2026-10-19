@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./Auth.css";
 import logo from "../../images/logo.png";
 import { useNavigate } from "react-router-dom";
+import { API_URL } from "../../api";
 
 export default function Register() {
 
@@ -46,7 +47,7 @@ export default function Register() {
 
             try {
                 const response = await fetch(
-                    "https://herbhaven.onrender.com/api/auth/register",
+                    `${API_URL}/auth/register`,
                     {
                         method: "POST",
                         headers: {

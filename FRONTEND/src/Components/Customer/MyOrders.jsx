@@ -1,8 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-const API_URL = "https://herbhaven.onrender.com";
+import { API_ORIGIN, API_URL } from "../../api";
 
 export default function MyOrders() {
   const [orders, setOrders] = useState([]);
@@ -17,7 +16,7 @@ export default function MyOrders() {
   async function refreshOrders() {
     const token = localStorage.getItem("token");
 
-    const response = await fetch(`${API_URL}/api/orders/my-orders`, {
+    const response = await fetch(`${API_URL}/orders/my-orders`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -48,7 +47,6 @@ export default function MyOrders() {
     }
 
     fetchOrders();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function formatDate(date) {
@@ -104,7 +102,7 @@ export default function MyOrders() {
     // Relative paths such as /uploads/herb.jpg
     const path = value.replace(/^\/+/, "");
 
-    return `${API_URL}/${path}`;
+    return `${API_ORIGIN}/${path}`;
   }
 
   function getProductName(item) {
@@ -154,7 +152,7 @@ export default function MyOrders() {
       setCancelError("");
 
       const response = await fetch(
-        `${API_URL}/api/orders/${orderId}/cancel`,
+        `${API_URL}/orders/${orderId}/cancel`,
         {
           method: "PUT",
           headers: {
@@ -209,7 +207,7 @@ export default function MyOrders() {
       setCancelError("");
 
       const response = await fetch(
-        `${API_URL}/api/orders/${orderId}/return`,
+        `${API_URL}/orders/${orderId}/return`,
         {
           method: "PUT",
           headers: {
@@ -271,7 +269,7 @@ export default function MyOrders() {
       }
 
       const response = await fetch(
-        `${API_URL}/api/payments/retry/${order._id}`,
+        `${API_URL}/payments/retry/${order._id}`,
         {
           method: "POST",
           headers: {
@@ -300,7 +298,7 @@ export default function MyOrders() {
         handler: async (paymentResponse) => {
           try {
             const verifyResponse = await fetch(
-              `${API_URL}/api/payments/verify`,
+              `${API_URL}/payments/verify`,
               {
                 method: "POST",
                 headers: {

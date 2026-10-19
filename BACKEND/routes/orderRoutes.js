@@ -13,6 +13,7 @@ const {
   getAllOrders,
   updateOrderStatus,
   reviewReturnRequest,
+  confirmReturnReceived,
 } = require("../controllers/orderController");
 
 
@@ -34,6 +35,12 @@ router.put(
   updateOrderStatus
 );
 router.put("/admin/:orderId/return-review", protect, adminOnly, reviewReturnRequest);
+router.put(
+  "/admin/:orderId/return-received",
+  protect,
+  adminOnly,
+  confirmReturnReceived
+);
 
 
 module.exports = router;

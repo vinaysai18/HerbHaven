@@ -1,3 +1,5 @@
+import { API_ORIGIN } from "../../api";
+
 export default function ProductCard({ herb, onDelete, onEdit }) {
 
     return (
@@ -8,7 +10,7 @@ export default function ProductCard({ herb, onDelete, onEdit }) {
                 src={
                     herb.image?.startsWith("http")
                         ? herb.image
-                        : `https://herbhaven.onrender.com${herb.image}`
+                        : `${API_ORIGIN}${herb.image}`
                 }
                 alt={herb.name}
                 className="product-image"

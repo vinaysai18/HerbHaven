@@ -5,6 +5,13 @@ const Razorpay = require("razorpay");
 
 const Order = require("../models/Order");
 const Product = require("../models/Product");
+const {
+  ensureOrderReservation,
+  paymentReservationExpiry,
+  releaseOrderReservation,
+  reserveOrderItems,
+  restoreOrderItems,
+} = require("../services/inventoryService");
 
 // Support common authentication middleware user ID formats.
 const getAuthenticatedUserId = (req) =>
@@ -66,9 +73,16 @@ const createPaymentOrder = async (req, res) => {
         });
       }
 
-      const quantity = Number(item.quantity);
+      const quantity =
+        typeof item.quantity === "string" && /^\d+$/.test(item.quantity)
+          ? Number(item.quantity)
+          : item.quantity;
 
-      if (!Number.isInteger(quantity) || quantity < 1) {
+      if (
+        typeof quantity !== "number" ||
+        !Number.isSafeInteger(quantity) ||
+        quantity < 1
+      ) {
         return res.status(400).json({
           message: "Each item must have a valid quantity.",
         });
@@ -115,7 +129,28 @@ const createPaymentOrder = async (req, res) => {
       status: "Pending",
       razorpayOrderId: razorpayOrder.id,
       refundStatus: "Not Applicable",
+      inventoryStatus: "Not Reserved",
+      reservationExpiresAt: paymentReservationExpiry(),
     });
+
+    let stockReserved = false;
+    try {
+      await reserveOrderItems(order.items, userId, order._id);
+      stockReserved = true;
+      order.inventoryStatus = "Reserved";
+      await order.save();
+    } catch (error) {
+      if (stockReserved) {
+        await restoreOrderItems(order, "Payment order creation failed", userId);
+      }
+      await Order.findByIdAndDelete(order._id);
+      if (error.message === "Insufficient stock for this operation.") {
+        return res.status(409).json({
+          message: "One or more items no longer have enough stock. Please update your cart.",
+        });
+      }
+      throw error;
+    }
 
     return res.status(201).json({
       message: "Payment order created successfully.",
@@ -229,16 +264,60 @@ const verifyPayment = async (req, res) => {
       });
     }
 
-    order.razorpayPaymentId = razorpay_payment_id;
-    order.paymentStatus = "Paid";
-    order.status = "Confirmed";
+    try {
+      if (!(await ensureOrderReservation(order, userId))) {
+        return res.status(409).json({
+          message: "Payment was captured, but the order can no longer be reserved. Contact support immediately.",
+        });
+      }
+    } catch (error) {
+      if (error.message === "Insufficient stock for this operation.") {
+        return res.status(409).json({
+          message: "Payment was captured, but stock is no longer available. Contact support immediately.",
+        });
+      }
+      throw error;
+    }
 
-    await order.save();
+    const paidOrder = await Order.findOneAndUpdate(
+      {
+        _id: order._id,
+        paymentStatus: "Pending",
+        inventoryStatus: "Reserved",
+        status: { $nin: ["Cancelled", "Returned"] },
+      },
+      {
+        $set: {
+          razorpayPaymentId: razorpay_payment_id,
+          paymentStatus: "Paid",
+          status: "Confirmed",
+          inventoryStatus: "Committed",
+          reservationExpiresAt: null,
+        },
+      },
+      { new: true }
+    );
+    if (!paidOrder) {
+      const currentOrder = await Order.findById(order._id);
+      if (
+        currentOrder?.paymentStatus === "Paid" &&
+        currentOrder.razorpayPaymentId === razorpay_payment_id
+      ) {
+        return res.status(200).json({
+          message: "Payment was already verified.",
+          success: true,
+          order: currentOrder,
+        });
+      }
+      return res.status(409).json({
+        message: "Order inventory is no longer reserved. Contact support if payment was captured.",
+      });
+    }
 
     return res.status(200).json({
       message: "Payment verified successfully.",
       success: true,
-      order,
+      order: paidOrder,
     });
   } catch (error) {
     console.error("Verify payment error:", error);
@@ -312,15 +391,58 @@ const retryPayment = async (req, res) => {
       receipt: `retry_${order._id}_${Date.now()}`,
     });
 
-    order.razorpayOrderId = razorpayOrder.id;
-    order.paymentStatus = "Pending";
+    const retriedOrder = await Order.findOneAndUpdate(
+      {
+        _id: order._id,
+        user: userId,
+        paymentStatus: { $in: ["Pending", "Failed"] },
+        inventoryStatus: { $in: ["Reserved", "Released", "Not Reserved"] },
+        status: { $nin: ["Cancelled", "Returned"] },
+      },
+      {
+        $set: {
+          razorpayOrderId: razorpayOrder.id,
+          paymentStatus: "Pending",
+          reservationExpiresAt: paymentReservationExpiry(),
+        },
+      },
+      { new: true }
+    );
+    if (!retriedOrder) {
+      return res.status(409).json({
+        message: "Order status changed. Refresh before retrying payment.",
+      });
+    }
 
-    await order.save();
+    if (retriedOrder.inventoryStatus !== "Reserved") {
+      let reserved = false;
+      try {
+        reserved = await ensureOrderReservation(retriedOrder, userId);
+      } catch (error) {
+        if (error.message !== "Insufficient stock for this operation.") throw error;
+      }
+      if (!reserved) {
+        await Order.updateOne(
+          {
+            _id: retriedOrder._id,
+            razorpayOrderId: razorpayOrder.id,
+            inventoryStatus: { $in: ["Released", "Not Reserved"] },
+            paymentStatus: "Pending",
+          },
+          { $set: { paymentStatus: "Failed" } }
+        );
+        return res.status(409).json({
+          message: "There is no longer enough stock to retry this order.",
+        });
+      }
+    }
+
+    const currentOrder = await Order.findById(retriedOrder._id);
 
     return res.status(200).json({
       message: "Retry payment order created.",
-      order,
-      orderId: order._id,
+      order: currentOrder,
+      orderId: currentOrder._id,
       razorpayOrderId: razorpayOrder.id,
       amount: razorpayOrder.amount,
       currency: razorpayOrder.currency,
@@ -513,12 +635,100 @@ const handleRazorpayWebhook = async (req, res) => {
       "refund.created",
       "refund.processed",
       "refund.failed",
+      "payment.failed",
+      "payment.captured",
     ];
 
     if (!supportedEvents.includes(event.event)) {
       return res.status(200).json({
         message: "Event acknowledged.",
       });
+    }
+
+    if (event.event === "payment.failed" || event.event === "payment.captured") {
+      const payment = event.payload?.payment?.entity;
+      if (!payment?.id || !payment?.order_id) {
+        return res.status(400).send("Payment details missing");
+      }
+
+      const order = await Order.findOne({
+        razorpayOrderId: payment.order_id,
+      });
+      if (!order) {
+        return res.status(200).json({ message: "No matching order found." });
+      }
+
+      if (event.event === "payment.failed") {
+        const failedOrder = await releaseOrderReservation(
+          order._id,
+          "Razorpay payment failed",
+          null,
+          { paymentStatus: "Failed" }
+        );
+        if (!failedOrder && order.paymentStatus === "Pending") {
+          await Order.updateOne(
+            { _id: order._id, paymentStatus: "Pending", inventoryStatus: "Released" },
+            { $set: { paymentStatus: "Failed" } }
+          );
+        }
+        return res.status(200).json({ message: "Payment failure acknowledged." });
+      }
+
+      if (
+        payment.status !== "captured" ||
+        payment.currency !== "INR" ||
+        payment.amount !== Math.round(order.totalAmount * 100)
+      ) {
+        return res.status(400).send("Captured payment details do not match");
+      }
+      if (
+        order.paymentStatus === "Paid" &&
+        order.razorpayPaymentId === payment.id
+      ) {
+        return res.status(200).json({ message: "Payment event already processed." });
+      }
+      try {
+        if (!(await ensureOrderReservation(order))) {
+          console.error("Captured payment could not reserve inventory:", order._id);
+          return res.status(200).json({
+            message: "Captured payment requires manual inventory review.",
+          });
+        }
+      } catch (error) {
+        console.error("Captured payment inventory reservation failed:", error);
+        return res.status(200).json({
+          message: "Captured payment requires manual inventory review.",
+        });
+      }
+      const paidOrder = await Order.findOneAndUpdate(
+        {
+          _id: order._id,
+          paymentStatus: "Pending",
+          inventoryStatus: "Reserved",
+          status: { $nin: ["Cancelled", "Returned"] },
+        },
+        {
+          $set: {
+            razorpayPaymentId: payment.id,
+            paymentStatus: "Paid",
+            status: "Confirmed",
+            inventoryStatus: "Committed",
+            reservationExpiresAt: null,
+          },
+        },
+        { new: true }
+      );
+      if (!paidOrder) {
+        const currentOrder = await Order.findById(order._id);
+        if (
+          currentOrder?.paymentStatus === "Paid" &&
+          currentOrder.razorpayPaymentId === payment.id
+        ) {
+          return res.status(200).json({ message: "Payment event already processed." });
+        }
+        console.error("Captured payment has no active inventory reservation:", order._id);
+      }
+      return res.status(200).json({ message: "Payment event acknowledged." });
     }
 
     const refund = event.payload?.refund?.entity;

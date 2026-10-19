@@ -78,6 +78,17 @@ const orderSchema = new mongoose.Schema(
       default: "Pending",
     },
 
+    inventoryStatus: {
+      type: String,
+      enum: ["Not Reserved", "Reserving", "Reserved", "Committed", "Released"],
+      default: "Not Reserved",
+    },
+
+    reservationExpiresAt: {
+      type: Date,
+      default: null,
+    },
+
     // Razorpay transaction details
     razorpayOrderId: {
       type: String,
@@ -107,6 +118,10 @@ const orderSchema = new mongoose.Schema(
         default: null,
       },
       reviewedAt: {
+        type: Date,
+        default: null,
+      },
+      receivedAt: {
         type: Date,
         default: null,
       },

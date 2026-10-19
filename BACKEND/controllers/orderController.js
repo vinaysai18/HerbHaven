@@ -2,6 +2,12 @@
 const mongoose = require("mongoose");
 const Order = require("../models/Order");
 const Product = require("../models/Product");
+const {
+  changeStock,
+  releaseOrderReservation,
+  reserveOrderItems,
+  restoreOrderItems,
+} = require("../services/inventoryService");
 
 // Place a Cash on Delivery order
 const createOrder = async (req, res) => {
@@ -35,10 +41,14 @@ const createOrder = async (req, res) => {
 
     for (const item of items) {
       const { productId } = item;
-      const quantity = Number(item.quantity);
+      const quantity =
+        typeof item.quantity === "string" && /^\d+$/.test(item.quantity)
+          ? Number(item.quantity)
+          : item.quantity;
 
       if (
         !mongoose.isValidObjectId(productId) ||
+        typeof quantity !== "number" ||
         !Number.isSafeInteger(quantity) ||
         quantity < 1
       ) {
@@ -90,7 +100,27 @@ const createOrder = async (req, res) => {
       status: "Pending",
       paymentMethod: "COD",
       paymentStatus: "Pending",
+      inventoryStatus: "Not Reserved",
     });
+
+    let stockReserved = false;
+    try {
+      await reserveOrderItems(order.items, req.userId, order._id);
+      stockReserved = true;
+      order.inventoryStatus = "Reserved";
+      await order.save();
+    } catch (error) {
+      if (stockReserved) {
+        await restoreOrderItems(order, "Order creation failed", req.userId);
+      }
+      await Order.findByIdAndDelete(order._id);
+      if (error.message === "Insufficient stock for this operation.") {
+        return res.status(409).json({
+          message: "One or more items no longer have enough stock. Please update your cart.",
+        });
+      }
+      throw error;
+    }
 
     return res.status(201).json({
       message: "Cash on Delivery order placed successfully.",
@@ -148,6 +178,24 @@ const cancelOrder = async (req, res) => {
           order.status === "Delivered"
             ? "Delivered orders cannot be cancelled. Please request a return."
             : "This order cannot be cancelled.",
+      });
+    }
+
+    if (order.inventoryStatus === "Reserved") {
+      const cancelledOrder = await releaseOrderReservation(
+        order._id,
+        "Order cancelled",
+        req.userId,
+        { status: "Cancelled" }
+      );
+      if (!cancelledOrder) {
+        return res.status(409).json({
+          message: "Order status changed. Refresh and try again.",
+        });
+      }
+      return res.status(200).json({
+        message: "Order cancelled successfully.",
+        order: cancelledOrder,
       });
     }
 
@@ -354,7 +402,29 @@ const updateOrderStatus = async (req, res) => {
       });
     }
 
+    if (status === "Cancelled" && order.inventoryStatus === "Reserved") {
+      const cancelledOrder = await releaseOrderReservation(
+        order._id,
+        "Order cancelled by administrator",
+        req.userId,
+        { status: "Cancelled" }
+      );
+      if (!cancelledOrder) {
+        return res.status(409).json({
+          message: "Order status changed. Refresh and try again.",
+        });
+      }
+      return res.status(200).json({
+        message: "Order status updated successfully.",
+        order: cancelledOrder,
+      });
+    }
+
     order.status = status;
+    if (status === "Delivered" && order.inventoryStatus === "Reserved") {
+      order.inventoryStatus = "Committed";
+      order.reservationExpiresAt = null;
+    }
     await order.save();
 
     return res.status(200).json({
@@ -370,6 +440,64 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+const confirmReturnReceived = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+    if (!mongoose.isValidObjectId(orderId)) {
+      return res.status(400).json({ message: "Invalid order ID." });
+    }
+
+    const eligibleOrder = await Order.findOne({
+      _id: orderId,
+      "returnRequest.status": { $in: ["Approved", "Completed"] },
+      "returnRequest.receivedAt": null,
+    });
+    if (!eligibleOrder) {
+      return res.status(409).json({
+        message: "Only an approved return that has not been received can be confirmed.",
+      });
+    }
+    const productIds = [...new Set(eligibleOrder.items.map((item) => String(item.product)))];
+    if ((await Product.countDocuments({ _id: { $in: productIds } })) !== productIds.length) {
+      return res.status(409).json({
+        message: "A product on this return no longer exists. Review the order before restocking.",
+      });
+    }
+
+    const order = await Order.findOneAndUpdate(
+      {
+        _id: orderId,
+        "returnRequest.status": { $in: ["Approved", "Completed"] },
+        "returnRequest.receivedAt": null,
+      },
+      { $set: { "returnRequest.receivedAt": new Date() } },
+      { new: true }
+    );
+    if (!order) {
+      return res.status(409).json({
+        message: "Only an approved return that has not been received can be confirmed.",
+      });
+    }
+
+    for (const item of order.items) {
+      await changeStock({
+        productId: item.product,
+        delta: item.quantity,
+        reason: "Approved return received",
+        userId: req.userId,
+        orderId: order._id,
+      });
+    }
+    return res.status(200).json({
+      message: "Returned goods received and restocked.",
+      order,
+    });
+  } catch (error) {
+    console.error("Confirm returned goods error:", error);
+    return res.status(500).json({ message: "Failed to restock returned goods." });
+  }
+};
+
 
 module.exports = {
   createOrder,
@@ -379,4 +507,5 @@ module.exports = {
   getAllOrders,
   updateOrderStatus,
   reviewReturnRequest,
+  confirmReturnReceived,
 };

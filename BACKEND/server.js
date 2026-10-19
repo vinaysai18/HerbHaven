@@ -10,6 +10,7 @@ const orderRoutes = require("./routes/orderRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const authRoutes = require("./routes/authRoutes");
 const productRoutes = require("./routes/productRoutes");
+const { expirePaymentReservations } = require("./services/inventoryService");
 
 const {
   handleRazorpayWebhook,
@@ -17,7 +18,20 @@ const {
 
 const app = express();
 
-connectDB();
+connectDB()
+  .then(() => {
+    expirePaymentReservations().catch((error) => {
+      console.error("Initial inventory reservation expiry sweep failed:", error);
+    });
+    setInterval(() => {
+      expirePaymentReservations().catch((error) => {
+        console.error("Inventory reservation expiry sweep failed:", error);
+      });
+    }, 60 * 1000);
+  })
+  .catch((error) => {
+    console.error("Inventory reservation expiry scheduler could not start:", error);
+  });
 
 app.use(cors());
 

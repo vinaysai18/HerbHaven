@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import ProductCard from "./ProductCard.jsx";
+import { API_URL } from "../../api";
 
 export default function AdminShop() {
 
@@ -9,7 +10,11 @@ export default function AdminShop() {
         name: "",
         price: "",
         description: "",
-        image: ""
+        image: "",
+        sku: "",
+        category: "",
+        stockQuantity: "0",
+        lowStockThreshold: "5"
     });
 
     const [editingId, setEditingId] = useState(null);
@@ -24,7 +29,7 @@ export default function AdminShop() {
                 const token = localStorage.getItem("token");
 
                 const response = await fetch(
-                    "https://herbhaven.onrender.com/api/products",
+                    `${API_URL}/products`,
                     {
                         headers: {
                             Authorization: `Bearer ${token}`
@@ -95,6 +100,7 @@ export default function AdminShop() {
 
         try {
             const token = localStorage.getItem("token");
+            const isEditing = editingId !== null;
 
             // Create FormData for Multer
             const formDataToSend = new FormData();
@@ -102,17 +108,21 @@ export default function AdminShop() {
             formDataToSend.append("name", formData.name);
             formDataToSend.append("price", formData.price);
             formDataToSend.append("description", formData.description);
+            if (!isEditing) {
+                formDataToSend.append("sku", formData.sku);
+                formDataToSend.append("category", formData.category);
+                formDataToSend.append("stockQuantity", formData.stockQuantity);
+                formDataToSend.append("lowStockThreshold", formData.lowStockThreshold);
+            }
 
             // Attach image only when a new file is selected
             if (formData.image instanceof File) {
                 formDataToSend.append("image", formData.image);
             }
 
-            const isEditing = editingId !== null;
-
             const url = isEditing
-                ? `https://herbhaven.onrender.com/api/products/${editingId}`
-                : "https://herbhaven.onrender.com/api/products";
+                ? `${API_URL}/products/${editingId}`
+                : `${API_URL}/products`;
 
             const response = await fetch(url, {
                 method: isEditing ? "PUT" : "POST",
@@ -152,7 +162,11 @@ export default function AdminShop() {
                 name: "",
                 price: "",
                 description: "",
-                image: ""
+                image: "",
+                sku: "",
+                category: "",
+                stockQuantity: "0",
+                lowStockThreshold: "5"
             });
 
         } catch (error) {
@@ -180,7 +194,7 @@ export default function AdminShop() {
             console.log("Token exists:", !!token);
 
             const response = await fetch(
-                `https://herbhaven.onrender.com/api/products/${id}`,
+                `${API_URL}/products/${id}`,
                 {
                     method: "DELETE",
                     headers: {
@@ -218,7 +232,11 @@ export default function AdminShop() {
                     name: "",
                     price: "",
                     description: "",
-                    image: ""
+                    image: "",
+                    sku: "",
+                    category: "",
+                    stockQuantity: "0",
+                    lowStockThreshold: "5"
                 });
 
             }
@@ -247,8 +265,11 @@ export default function AdminShop() {
             name: herb.name,
             price: herb.price,
             description: herb.description,
-
-            image: ""
+            image: "",
+            sku: herb.sku || "",
+            category: herb.category || "",
+            stockQuantity: "0",
+            lowStockThreshold: String(herb.lowStockThreshold ?? 5)
         });
 
 
@@ -268,7 +289,11 @@ export default function AdminShop() {
             name: "",
             price: "",
             description: "",
-            image: ""
+            image: "",
+            sku: "",
+            category: "",
+            stockQuantity: "0",
+            lowStockThreshold: "5"
         });
 
     };
@@ -382,7 +407,57 @@ export default function AdminShop() {
 
                     </div>
 
+                    {editingId === null && (
+                        <>
+                            <div className="form-field">
+                                <label>SKU (optional)</label>
+                                <input
+                                    type="text"
+                                    name="sku"
+                                    placeholder="Auto-generated if left blank"
+                                    value={formData.sku}
+                                    onChange={handleChange}
+                                />
+                            </div>
 
+                            <div className="form-field">
+                                <label>Category</label>
+                                <input
+                                    type="text"
+                                    name="category"
+                                    placeholder="e.g. Teas, Oils, Supplements"
+                                    value={formData.category}
+                                    onChange={handleChange}
+                                />
+                            </div>
+
+                            <div className="form-field">
+                                <label>Initial stock quantity</label>
+                                <input
+                                    type="number"
+                                    name="stockQuantity"
+                                    min="0"
+                                    step="1"
+                                    value={formData.stockQuantity}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="form-field">
+                                <label>Low-stock threshold</label>
+                                <input
+                                    type="number"
+                                    name="lowStockThreshold"
+                                    min="0"
+                                    step="1"
+                                    value={formData.lowStockThreshold}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+                        </>
+                    )}
 
                     <div className="form-field">
 

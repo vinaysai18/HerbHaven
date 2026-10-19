@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Checkout.css";
+import { API_URL } from "../../api";
 
 function loadRazorpay() {
   return new Promise((resolve) => {
@@ -42,6 +43,9 @@ export default function Checkout({ cart, clearCart }) {
       total + Number(item.price) * Number(item.quantity),
     0
   );
+  const hasUnavailableItems = cart.some(
+    (item) => Number(item.quantity) > (Number(item.stockQuantity) || 0)
+  );
 
   const handlePlaceOrder = async (e) => {
     e.preventDefault();
@@ -57,6 +61,13 @@ export default function Checkout({ cart, clearCart }) {
 
     if (!address.trim()) {
       setErrorMessage("Please enter your delivery address.");
+      return;
+    }
+
+    if (hasUnavailableItems) {
+      setErrorMessage(
+        "One or more cart quantities exceed the last known stock. Update your cart before checkout."
+      );
       return;
     }
 
@@ -91,7 +102,7 @@ export default function Checkout({ cart, clearCart }) {
       // CASH ON DELIVERY
       if (paymentMethod === "COD") {
         const response = await fetch(
-          "https://herbhaven.onrender.com/api/orders",
+          `${API_URL}/orders`,
           {
             method: "POST",
             headers: {
@@ -142,7 +153,7 @@ export default function Checkout({ cart, clearCart }) {
       }
 
       const response = await fetch(
-        "https://herbhaven.onrender.com/api/payments/create-order",
+        `${API_URL}/payments/create-order`,
         {
           method: "POST",
           headers: {
@@ -193,7 +204,7 @@ export default function Checkout({ cart, clearCart }) {
             setErrorMessage("");
 
             const verifyResponse = await fetch(
-              "https://herbhaven.onrender.com/api/payments/verify",
+              `${API_URL}/payments/verify`,
               {
                 method: "POST",
                 headers: {
@@ -365,6 +376,7 @@ export default function Checkout({ cart, clearCart }) {
                 </p>
 
                 <p>Quantity: {item.quantity}</p>
+                <p>Available: {Number(item.stockQuantity) || 0}</p>
 
                 <p>
                   Subtotal: ₹
@@ -392,7 +404,7 @@ export default function Checkout({ cart, clearCart }) {
           <button
             type="submit"
             className="buy-items"
-            disabled={loading}
+            disabled={loading || hasUnavailableItems}
           >
             {loading
               ? "Processing..."

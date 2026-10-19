@@ -88,6 +88,11 @@ export default function Cart({
                                             Price: ₹
                                             {Number(item.price).toFixed(2)}
                                         </p>
+                                        <p>
+                                            {item.quantity > (Number(item.stockQuantity) || 0)
+                                                ? "Requested quantity exceeds the available stock."
+                                                : `${Number(item.stockQuantity) || 0} currently available`}
+                                        </p>
 
                                         {/* QUANTITY CONTROLS */}
 
@@ -113,6 +118,10 @@ export default function Cart({
                                                     increaseQuantity(productId)
                                                 }
                                                 aria-label={`Increase ${item.name} quantity`}
+                                                disabled={
+                                                    item.quantity >=
+                                                    (Number(item.stockQuantity) || 0)
+                                                }
                                             >
                                                 +
                                             </button>
@@ -150,6 +159,10 @@ export default function Cart({
                         <button
                             className="buy-items"
                             onClick={handleCheckout}
+                            disabled={cart.some(
+                                (item) =>
+                                    item.quantity > (Number(item.stockQuantity) || 0)
+                            )}
                         >
                             Proceed to Checkout
                         </button>

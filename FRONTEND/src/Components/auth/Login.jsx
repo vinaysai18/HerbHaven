@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../../images/logo.png";
 import "./Auth.css";
+import { API_URL } from "../../api";
 
 export default function Login() {
 
@@ -38,7 +39,7 @@ export default function Login() {
 
         try {
             const response = await fetch(
-                "https://herbhaven.onrender.com/api/auth/login",
+                `${API_URL}/auth/login`,
                 {
                     method: "POST",
                     headers: {
