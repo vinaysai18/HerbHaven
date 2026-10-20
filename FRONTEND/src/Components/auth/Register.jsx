@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "./Auth.css";
 import logo from "../../images/logo.png";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { API_URL } from "../../api";
 
 export default function Register() {
@@ -347,9 +347,9 @@ export default function Register() {
                         <p>
                             Already have an account?
                             {" "}
-                            <a href="/login">
+                            <Link to="/login">
                                 Login
-                            </a>
+                            </Link>
                         </p>
 
                     </div>
