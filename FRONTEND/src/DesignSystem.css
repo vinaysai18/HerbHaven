@@ -969,6 +969,20 @@ textarea:focus-visible {
   box-shadow: none;
 }
 
+.admin-shell .inventory-actions .inventory-history-toggle,
+.admin-shell .inventory-adjust-form .inventory-history-toggle {
+  border: 1px solid var(--botanical-border);
+  background: var(--botanical-light);
+  color: var(--botanical-deep);
+}
+
+.admin-shell .inventory-actions .inventory-history-toggle:hover,
+.admin-shell .inventory-adjust-form .inventory-history-toggle:hover {
+  border-color: var(--botanical-sage);
+  background: #dce6d5;
+  color: var(--botanical-deep);
+}
+
 .admin-shell .inventory-page {
   min-height: calc(100vh - 78px);
   padding: clamp(24px, 4vw, 48px) clamp(16px, 5vw, 72px);
