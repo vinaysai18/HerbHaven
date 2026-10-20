@@ -290,7 +290,10 @@ export default function Checkout({ cart, clearCart }) {
   if (cart.length === 0) {
     return (
       <div className="cart-page">
-        <h1>Your cart is empty 🌿</h1>
+        <div className="cart-page-heading">
+          <p className="cart-page-eyebrow">READY WHEN YOU ARE</p>
+          <h1 className="cart-title">Your cart is empty</h1>
+        </div>
 
         <button
           type="button"
@@ -305,10 +308,13 @@ export default function Checkout({ cart, clearCart }) {
 
   return (
     <div className="cart-page">
-      <h1 className="cart-title">📦 Checkout</h1>
+      <div className="cart-page-heading">
+        <p className="cart-page-eyebrow">A FEW FINAL DETAILS</p>
+        <h1 className="cart-title">Checkout</h1>
+      </div>
 
-      <form onSubmit={handlePlaceOrder}>
-        <div className="cart-item-info">
+      <form className="checkout-layout" onSubmit={handlePlaceOrder}>
+        <section className="cart-item-info checkout-section delivery-section">
           <h2>Delivery Details</h2>
 
           <label htmlFor="delivery-address">
@@ -325,95 +331,102 @@ export default function Checkout({ cart, clearCart }) {
             rows={4}
             disabled={loading}
           />
-        </div>
+        </section>
 
-        <div className="cart-item-info">
+        <section className="cart-item-info checkout-section payment-section">
           <h2>Payment Method</h2>
 
-          <label>
+          <label className="payment-option">
             <input
               type="radio"
+              id="payment-razorpay"
               name="paymentMethod"
               value="Razorpay"
               checked={paymentMethod === "Razorpay"}
               onChange={(e) => setPaymentMethod(e.target.value)}
               disabled={loading}
             />
-            Online Payment (Razorpay)
+            <span>
+              <strong>Online payment</strong>
+              <small>Secure checkout with Razorpay</small>
+            </span>
           </label>
 
-          <label>
+          <label className="payment-option">
             <input
               type="radio"
+              id="payment-cod"
               name="paymentMethod"
               value="COD"
               checked={paymentMethod === "COD"}
               onChange={(e) => setPaymentMethod(e.target.value)}
               disabled={loading}
             />
-            Cash on Delivery
+            <span>
+              <strong>Cash on delivery</strong>
+              <small>Pay when your order arrives</small>
+            </span>
           </label>
-        </div>
+        </section>
 
-        <div className="cart-items">
-          <h2>Order Summary</h2>
+        <section className="checkout-summary" aria-label="Order summary">
+          <div className="cart-items">
+            <h2>Order Summary</h2>
 
-          {cart.map((item) => (
-            <div
-              className="cart-item"
-              key={item._id || item.id}
-            >
-              <ProductImage
-                className="cart-item-image"
-                image={item.image}
-                alt={item.name}
-              />
+            {cart.map((item) => (
+              <div
+                className="cart-item"
+                key={item._id || item.id}
+              >
+                <ProductImage
+                  className="cart-item-image"
+                  image={item.image}
+                  alt={item.name}
+                />
 
-              <div className="cart-item-info">
-                <h3>{item.name}</h3>
+                <div className="cart-item-info">
+                  <h3>{item.name}</h3>
 
-                <p>
-                  Price: ₹{Number(item.price).toFixed(2)}
-                </p>
+                  <p>
+                    Price: ₹{Number(item.price).toFixed(2)}
+                  </p>
 
-                <p>Quantity: {item.quantity}</p>
-                <p>Available: {Number(item.stockQuantity) || 0}</p>
+                  <p>Quantity: {item.quantity}</p>
+                  <p>Available: {Number(item.stockQuantity) || 0}</p>
 
-                <p>
-                  Subtotal: ₹
-                  {(
-                    Number(item.price) * Number(item.quantity)
-                  ).toFixed(2)}
-                </p>
+                  <p>
+                    Subtotal: ₹
+                    {(
+                      Number(item.price) * Number(item.quantity)
+                    ).toFixed(2)}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
 
-        <div className="cart-page-total">
-          <h2>Total: ₹{totalAmount.toFixed(2)}</h2>
+          <div className="cart-page-total">
+            <h2>Total: ₹{totalAmount.toFixed(2)}</h2>
 
-          {errorMessage && (
-            <p
-              role="alert"
-              style={{ color: "red", marginBottom: "12px" }}
+            {errorMessage && (
+              <p role="alert">
+                {errorMessage}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              className="buy-items"
+              disabled={loading || hasUnavailableItems}
             >
-              {errorMessage}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            className="buy-items"
-            disabled={loading || hasUnavailableItems}
-          >
-            {loading
-              ? "Processing..."
-              : paymentMethod === "COD"
-              ? "Place COD Order"
-              : "Pay Now"}
-          </button>
-        </div>
+              {loading
+                ? "Processing..."
+                : paymentMethod === "COD"
+                ? "Place COD Order"
+                : "Pay Now"}
+            </button>
+          </div>
+        </section>
       </form>
     </div>
   );

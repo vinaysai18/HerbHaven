@@ -25,9 +25,10 @@ export default function Cart({
 
         <div className="cart-page">
 
-            <h1 className="cart-title">
-                🛒 Your Cart
-            </h1>
+            <div className="cart-page-heading">
+                <p className="cart-page-eyebrow">YOUR SELECTION</p>
+                <h1 className="cart-title">Your Cart</h1>
+            </div>
 
             {cart.length === 0 ? (
 
@@ -54,120 +55,92 @@ export default function Cart({
 
                 <>
 
-                    {/* CART ITEMS */}
+                    <div className="cart-layout">
+                        <section className="cart-items" aria-label="Cart items">
+                            {cart.map((item) => {
+                                const productId = item._id || item.id;
 
-                    <div className="cart-items">
+                                return (
+                                    <div
+                                        className="cart-item"
+                                        key={productId}
+                                    >
+                                        <ProductImage
+                                            className="cart-item-image"
+                                            image={item.image}
+                                            alt={item.name}
+                                        />
 
-                        {cart.map((item) => {
+                                        <div className="cart-item-info">
+                                            <h2>{item.name}</h2>
+                                            <p>{item.description}</p>
+                                            <p>
+                                                Price: ₹
+                                                {Number(item.price).toFixed(2)}
+                                            </p>
+                                            <p>
+                                                {item.quantity > (Number(item.stockQuantity) || 0)
+                                                    ? "Requested quantity exceeds the available stock."
+                                                    : `${Number(item.stockQuantity) || 0} currently available`}
+                                            </p>
 
-                            const productId = item._id || item.id;
+                                            <div className="quantity-controls">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => decreaseQuantity(productId)}
+                                                    aria-label={`Decrease ${item.name} quantity`}
+                                                >
+                                                    −
+                                                </button>
 
-                            return (
+                                                <span>{item.quantity}</span>
 
-                                <div
-                                    className="cart-item"
-                                    key={productId}
-                                >
+                                                <button
+                                                    type="button"
+                                                    onClick={() => increaseQuantity(productId)}
+                                                    aria-label={`Increase ${item.name} quantity`}
+                                                    disabled={
+                                                        item.quantity >=
+                                                        (Number(item.stockQuantity) || 0)
+                                                    }
+                                                >
+                                                    +
+                                                </button>
+                                            </div>
 
-                                    <ProductImage
-                                        className="cart-item-image"
-                                        image={item.image}
-                                        alt={item.name}
-                                    />
-
-                                    <div className="cart-item-info">
-
-                                        <h2>
-                                            {item.name}
-                                        </h2>
-
-                                        <p>
-                                            {item.description}
-                                        </p>
-
-                                        <p>
-                                            Price: ₹
-                                            {Number(item.price).toFixed(2)}
-                                        </p>
-                                        <p>
-                                            {item.quantity > (Number(item.stockQuantity) || 0)
-                                                ? "Requested quantity exceeds the available stock."
-                                                : `${Number(item.stockQuantity) || 0} currently available`}
-                                        </p>
-
-                                        {/* QUANTITY CONTROLS */}
-
-                                        <div className="quantity-controls">
-
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    decreaseQuantity(productId)
-                                                }
-                                                aria-label={`Decrease ${item.name} quantity`}
-                                            >
-                                                −
-                                            </button>
-
-                                            <span>
-                                                {item.quantity}
-                                            </span>
-
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    increaseQuantity(productId)
-                                                }
-                                                aria-label={`Increase ${item.name} quantity`}
-                                                disabled={
-                                                    item.quantity >=
-                                                    (Number(item.stockQuantity) || 0)
-                                                }
-                                            >
-                                                +
-                                            </button>
-
+                                            <h3>
+                                                Subtotal: ₹
+                                                {(
+                                                    Number(item.price) *
+                                                    item.quantity
+                                                ).toFixed(2)}
+                                            </h3>
                                         </div>
-
-                                        <h3>
-                                            Subtotal: ₹
-                                            {(
-                                                Number(item.price) *
-                                                item.quantity
-                                            ).toFixed(2)}
-                                        </h3>
-
                                     </div>
-
-                                </div>
-
-                            );
-
-                        })}
-
-                    </div>
+                                );
+                            })}
+                        </section>
 
 
-                    {/* CART TOTAL */}
-
-                    <div className="cart-page-total">
-
-                        <h2>
-                            Total Amount: ₹
-                            {totalAmount.toFixed(2)}
-                        </h2>
-
-                        <button
-                            className="buy-items"
-                            onClick={handleCheckout}
-                            disabled={cart.some(
-                                (item) =>
-                                    item.quantity > (Number(item.stockQuantity) || 0)
-                            )}
-                        >
-                            Proceed to Checkout
-                        </button>
-
+                        <aside className="cart-summary" aria-label="Cart summary">
+                            <p className="cart-summary-eyebrow">ORDER SUMMARY</p>
+                            <div className="cart-page-total">
+                                <h2>
+                                    Total Amount: ₹
+                                    {totalAmount.toFixed(2)}
+                                </h2>
+                                <button
+                                    className="buy-items"
+                                    onClick={handleCheckout}
+                                    disabled={cart.some(
+                                        (item) =>
+                                            item.quantity > (Number(item.stockQuantity) || 0)
+                                    )}
+                                >
+                                    Proceed to Checkout
+                                </button>
+                            </div>
+                        </aside>
                     </div>
 
                 </>

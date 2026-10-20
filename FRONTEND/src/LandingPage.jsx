@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import "./LandingPage.css";
 
@@ -40,20 +39,19 @@ const LandingPage = () => {
                     </div>
 
                     <h1>
-                        Nature's Goodness,
+                        Pure Herbs for
                         <br />
-                        <span>Delivered Naturally</span>
+                        <span>a Healthier Tomorrow</span>
                     </h1>
 
                     <p>
-                        Discover premium herbs and natural products
-                        carefully selected to bring health, balance
-                        and wellness to your life.
+                        Discover herbal essentials selected to bring more balance,
+                        comfort, and nature into your everyday routine.
                     </p>
 
                     {/* Goes to Login inside Auth */}
                     <Link to="/login" className="explore-btn">
-                        <span>Explore</span>
+                        <span>Explore the collection</span>
                         <span className="arrow">→</span>
                     </Link>
 

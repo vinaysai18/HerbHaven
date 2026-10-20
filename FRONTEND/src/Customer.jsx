@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Link } from "react-router-dom";
 import { useState } from "react";
 
 import Header from "./Components/Customer/Header";
@@ -98,7 +98,7 @@ export default function Customer() {
     }
 
     return (
-        <>
+        <div className="customer-shell">
             <Header
                 cart={cart}
                 increaseQuantity={increaseQuantity}
@@ -108,7 +108,7 @@ export default function Customer() {
             <Routes>
                 <Route
                     path=""
-                    element={<Home />}
+                    element={<Home onAddtoCart={onAddtoCart} />}
                 />
 
                 <Route
@@ -149,6 +149,15 @@ export default function Customer() {
 
                 <Route path="orders" element={<MyOrders />} />
             </Routes>
-        </>
+            <footer className="storefront-footer">
+                <Link to="/customer" className="footer-brand">HerbHaven</Link>
+                <p>Thoughtful herbal essentials for everyday wellbeing.</p>
+                <nav aria-label="Footer navigation">
+                    <Link to="/customer/shop">Shop</Link>
+                    <Link to="/customer/about">Our story</Link>
+                    <Link to="/customer/orders">My orders</Link>
+                </nav>
+            </footer>
+        </div>
     );
-}   
+}

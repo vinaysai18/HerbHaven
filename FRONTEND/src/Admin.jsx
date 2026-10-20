@@ -9,17 +9,19 @@ import InventoryManagement from "./Components/Admin/InventoryManagement";
 import './Admin.css'
 export default function Admin() {
   return (
-    <>
+    <div className="admin-shell">
       <Header/>
-      <Routes>
-        <Route path="" element={<Home/>}/>
-        <Route path="shop" element={<AdminShop/>}/>
-        <Route path="about" element={<About/>}/>
-        <Route path="orders" element={<AdminOrders />} />
-        <Route path="return" element={<AdminReturnRequests/>}/>
-        <Route path="inventory" element={<InventoryManagement />} />
-      </Routes>
-    </>
+      <div className="admin-content">
+        <Routes>
+          <Route path="" element={<Home/>}/>
+          <Route path="shop" element={<AdminShop/>}/>
+          <Route path="about" element={<About/>}/>
+          <Route path="orders" element={<AdminOrders />} />
+          <Route path="return" element={<AdminReturnRequests/>}/>
+          <Route path="inventory" element={<InventoryManagement />} />
+        </Routes>
+      </div>
+    </div>
     
   );
 }

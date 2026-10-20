@@ -9,53 +9,36 @@ export default function Header() {
     }
 
     return (
-        <header>
-            <div className="logo-section">
-                <img src={logo} alt="logo" />
+        <aside className="admin-sidebar" aria-label="Admin workspace">
+            <Link to="/admin" className="admin-sidebar-brand">
+                <img src={logo} alt="" />
+                <span>
+                    <strong>HerbHaven</strong>
+                    <small>ADMIN WORKSPACE</small>
+                </span>
+            </Link>
 
-                <h3 className="logo">
-                    <span className="text">H</span>erb
-                    <span className="text">H</span>aven
-                </h3>
-                <span className="Admin">Admin Page</span>
-            </div>
-
-            {/* <input
-                type="text"
-                className="search-bar"
-                placeholder="Search for products"
-            /> */}
-
-            <div className="nav-links">
-                <Link to="/admin">Home</Link>
-                <Link to="/admin/shop">Items</Link>
-                <Link to="/admin/about">About</Link>
-                <Link to="/admin/orders">View Orders</Link>
-                <Link to="/admin/return">View Returns</Link>
+            <nav className="admin-sidebar-nav" aria-label="Admin navigation">
+                <Link to="/admin">Dashboard</Link>
+                <Link to="/admin/shop">Products</Link>
+                <Link to="/admin/orders">Orders</Link>
+                <Link to="/admin/return">Returns</Link>
                 <Link to="/admin/inventory">Inventory</Link>
-            </div>
+                <Link to="/admin/about">About HerbHaven</Link>
+            </nav>
 
-            {/* <a className="cart" href="#">
-                <img src={cart} alt="cart" />
-            </a> */}
-            <div className="header-right">
-
-                <div className="user-section">
-                    <div className="user-avatar">
+            <div className="admin-sidebar-footer">
+                <div className="admin-sidebar-user">
+                    <span className="admin-sidebar-avatar">
                         {email ? email.charAt(0).toUpperCase() : "U"}
-                    </div>
-                    <div className="user-details">
-                        <span className="user-email">
-                            {email || "User"}
-                        </span>
-                        <span className="user-role">
-                            Admin
-                        </span>
-                    </div>
+                    </span>
+                    <span className="admin-sidebar-user-details">
+                        <strong>{email || "User"}</strong>
+                        <small>Administrator</small>
+                    </span>
                 </div>
-                <button className="logout" onClick={handleLogout}>Logout</button>
-                
+                <button className="logout" onClick={handleLogout}>Log out</button>
             </div>
-        </header>
+        </aside>
     );
 }
