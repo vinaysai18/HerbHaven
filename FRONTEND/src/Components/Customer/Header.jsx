@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import logo from "../../images/logo.png";
 import cart_logo from "../../images/cart.png";
+import ProductImage from "../ProductImage";
 
 export default function Header({
     cart,
@@ -101,8 +102,8 @@ export default function Header({
                                             className="cart-item"
                                             key={productId}
                                         >
-                                            <img
-                                                src={item.image}
+                                            <ProductImage
+                                                image={item.image}
                                                 alt={item.name}
                                             />
 

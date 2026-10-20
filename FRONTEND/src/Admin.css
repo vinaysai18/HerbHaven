@@ -407,6 +407,18 @@ select:focus {
     cursor: pointer;
 }
 
+.form-image-preview {
+    width: min(100%, 260px);
+    margin: 0 0 18px;
+}
+
+.form-image-preview img {
+    display: block;
+    width: 100%;
+    max-height: 180px;
+    object-fit: contain;
+}
+
 .products-scroll {
     flex: 1;
     overflow-y: auto;

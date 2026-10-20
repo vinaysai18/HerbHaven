@@ -1,4 +1,4 @@
-import { API_ORIGIN } from "../../api";
+import ProductImage from "../ProductImage";
 
 export default function ProductCard({ herb, onDelete, onEdit }) {
 
@@ -6,12 +6,8 @@ export default function ProductCard({ herb, onDelete, onEdit }) {
 
         <div className="product-card">
 
-            <img
-                src={
-                    herb.image?.startsWith("http")
-                        ? herb.image
-                        : `${API_ORIGIN}${herb.image}`
-                }
+            <ProductImage
+                image={herb.image}
                 alt={herb.name}
                 className="product-image"
             />

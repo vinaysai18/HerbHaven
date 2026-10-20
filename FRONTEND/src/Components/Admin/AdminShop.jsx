@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import ProductCard from "./ProductCard.jsx";
 import { API_URL } from "../../api";
+import ProductImage from "../ProductImage";
 
 export default function AdminShop() {
 
@@ -18,7 +19,13 @@ export default function AdminShop() {
     });
 
     const [editingId, setEditingId] = useState(null);
+    const [imagePreview, setImagePreview] = useState("");
 
+    useEffect(() => {
+        return () => {
+            if (imagePreview) URL.revokeObjectURL(imagePreview);
+        };
+    }, [imagePreview]);
 
     useEffect(() => {
 
@@ -89,8 +96,16 @@ export default function AdminShop() {
                 ...formData,
                 image: file
             });
+            setImagePreview(URL.createObjectURL(file));
+            return;
 
         }
+
+        setFormData({
+            ...formData,
+            image: ""
+        });
+        setImagePreview("");
 
     };
 
@@ -529,6 +544,18 @@ export default function AdminShop() {
                         />
 
                     </div>
+
+                    {(imagePreview || editingId !== null) && (
+                        <div className="form-image-preview">
+                            <ProductImage
+                                image={
+                                    imagePreview ||
+                                    products.find((product) => product._id === editingId)?.image
+                                }
+                                alt="Product image preview"
+                            />
+                        </div>
+                    )}
 
 
 

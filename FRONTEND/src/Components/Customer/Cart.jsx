@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import ProductImage from "../ProductImage";
 
 export default function Cart({
     cart,
@@ -68,9 +69,9 @@ export default function Cart({
                                     key={productId}
                                 >
 
-                                    <img
+                                    <ProductImage
                                         className="cart-item-image"
-                                        src={item.image}
+                                        image={item.image}
                                         alt={item.name}
                                     />
 

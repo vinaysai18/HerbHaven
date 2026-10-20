@@ -1,3 +1,5 @@
+import ProductImage from "../ProductImage";
+
 export default function ProductCard({ herb, onAddtoCart }) {
     const quantity = Number(herb.stockQuantity) || 0;
     const threshold = Number(herb.lowStockThreshold ?? 5);
@@ -10,8 +12,8 @@ export default function ProductCard({ herb, onAddtoCart }) {
     return (
         <div className="product-card">
 
-            <img
-                src={herb.image}
+            <ProductImage
+                image={herb.image}
                 alt={herb.name}
             />
 

@@ -8,6 +8,36 @@ export const API_ORIGIN = configuredApiUrl
 
 export const API_URL = `${API_ORIGIN}/api`;
 
+export function getProductImageUrl(image) {
+  if (typeof image !== "string" || !image.trim()) return "";
+  const value = image.trim().replace(/\\/g, "/");
+
+  if (/^(data:image\/|blob:)/i.test(value)) {
+    return value;
+  }
+
+  if (/^https?:\/\//i.test(value) || value.startsWith("//")) {
+    try {
+      const url = new URL(value.startsWith("//") ? `https:${value}` : value);
+      const uploadsIndex = url.pathname.toLowerCase().lastIndexOf("/uploads/");
+      if (uploadsIndex >= 0) {
+        return `${API_ORIGIN}${url.pathname.slice(uploadsIndex)}${url.search}${url.hash}`;
+      }
+      return value.startsWith("//") ? `https:${value}` : value;
+    } catch {
+      return "";
+    }
+  }
+
+  const uploadsIndex = value.toLowerCase().lastIndexOf("uploads/");
+  const path = uploadsIndex >= 0
+    ? `/${value.slice(uploadsIndex)}`
+    : value.startsWith("/")
+      ? value
+      : `/${value}`;
+  return `${API_ORIGIN}${path}`;
+}
+
 export async function readApiResponse(response, apiName = "API") {
   const contentType = response.headers.get("content-type") || "";
   const responseText = await response.text();

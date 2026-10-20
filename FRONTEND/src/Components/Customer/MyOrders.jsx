@@ -1,7 +1,8 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { API_ORIGIN, API_URL } from "../../api";
+import { API_URL } from "../../api";
+import ProductImage from "../ProductImage";
 
 export default function MyOrders() {
   const [orders, setOrders] = useState([]);
@@ -75,11 +76,10 @@ export default function MyOrders() {
       .replace(/\s+/g, "-");
   }
 
-  // Supports common image fields and absolute or relative image paths.
   function getProductImage(item) {
     const product = item.product;
 
-    const image =
+    return (
       item.image ||
       product?.image ||
       product?.imageUrl ||
@@ -87,22 +87,8 @@ export default function MyOrders() {
       product?.images?.[0] ||
       item.imageUrl ||
       item.thumbnail ||
-      item.images?.[0];
-
-    if (typeof image !== "string" || !image.trim()) {
-      return "";
-    }
-
-    const value = image.trim();
-
-    if (/^https?:\/\//i.test(value) || value.startsWith("data:image/")) {
-      return value;
-    }
-
-    // Relative paths such as /uploads/herb.jpg
-    const path = value.replace(/^\/+/, "");
-
-    return `${API_ORIGIN}/${path}`;
+      item.images?.[0]
+    );
   }
 
   function getProductName(item) {
@@ -459,21 +445,11 @@ export default function MyOrders() {
                       key={`${item.product?._id || item.product || item.name || "item"}-${index}`}
                     >
                       <div className="order-product-icon">
-                        {imageUrl ? (
-                          <img
-                            src={imageUrl}
-                            alt={productName}
-                            loading="lazy"
-                            onError={(event) => {
-                              // Hide broken images instead of repeatedly
-                              // attempting to load the same URL.
-                              event.currentTarget.onerror = null;
-                              event.currentTarget.style.display = "none";
-                            }}
-                          />
-                        ) : (
-                          <span>No image</span>
-                        )}
+                        <ProductImage
+                          image={imageUrl}
+                          alt={productName}
+                          loading="lazy"
+                        />
                       </div>
 
                       <div className="order-product-details">

@@ -1,5 +1,4 @@
-import chamomile from "../images/chamomile_flowers.png";
-import lavender from "../images/lavender_buds.png";
+import productImageFallback from "../images/product-image-fallback.svg";
 
 const herbs = [
     {
@@ -7,7 +6,7 @@ const herbs = [
         name: "Chamomile Flowers",
         price: 299,
         description: "Calming & helps promote relaxation and better sleep.",
-        image: chamomile
+        image: productImageFallback
     },
 
     {
@@ -15,7 +14,7 @@ const herbs = [
         name: "Lavender Buds",
         price: 399,
         description: "Helps reduce stress, anxiety and improves sleep quality.",
-        image: lavender
+        image: productImageFallback
     }
 ];
 

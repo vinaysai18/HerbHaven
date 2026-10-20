@@ -1,11 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import "./InventoryManagement.css";
-import { API_ORIGIN, API_URL, readApiResponse } from "../../api";
-
-function imageUrl(image) {
-  if (!image) return "";
-  return image.startsWith("http") ? image : `${API_ORIGIN}${image}`;
-}
+import { API_URL, readApiResponse } from "../../api";
+import ProductImage from "../ProductImage";
 
 export default function InventoryManagement() {
   const [products, setProducts] = useState([]);
@@ -223,7 +219,7 @@ export default function InventoryManagement() {
                   <tr key={product._id}>
                     <td>
                       <div className="inventory-product">
-                        {product.image && <img src={imageUrl(product.image)} alt="" />}
+                        <ProductImage image={product.image} alt="" />
                         <strong>{product.name}</strong>
                       </div>
                     </td>

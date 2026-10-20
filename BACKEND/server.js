@@ -17,6 +17,9 @@ const {
 } = require("./controllers/paymentController");
 
 const app = express();
+const uploadDir = path.resolve(
+  process.env.UPLOAD_DIR || path.join(__dirname, "uploads")
+);
 
 connectDB()
   .then(() => {
@@ -39,7 +42,7 @@ app.use(cors());
 // Adjust the path if your uploads folder is elsewhere.
 app.use(
   "/uploads",
-  express.static(path.join(__dirname, "uploads"))
+  express.static(uploadDir)
 );
 
 // Register the Razorpay webhook BEFORE express.json().

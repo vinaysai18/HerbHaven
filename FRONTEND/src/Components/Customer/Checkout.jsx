@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Checkout.css";
 import { API_URL } from "../../api";
+import ProductImage from "../ProductImage";
 
 function loadRazorpay() {
   return new Promise((resolve) => {
@@ -362,9 +363,9 @@ export default function Checkout({ cart, clearCart }) {
               className="cart-item"
               key={item._id || item.id}
             >
-              <img
+              <ProductImage
                 className="cart-item-image"
-                src={item.image}
+                image={item.image}
                 alt={item.name}
               />
 

@@ -1,6 +1,6 @@
 import ProductCard from "./CustomerProductCard";
 import { useState, useEffect } from "react";
-import { API_ORIGIN, API_URL } from "../../api";
+import { API_URL } from "../../api";
 
 export default function CustomerShop({ onAddtoCart }) {
 
@@ -102,9 +102,6 @@ export default function CustomerShop({ onAddtoCart }) {
                                 herb={{
                                     ...herb,
                                     id: herb._id,
-                                    image: herb.image?.startsWith("http")
-                                        ? herb.image
-                                        : `${API_ORIGIN}${herb.image}`,
                                 }}
                                 onAddtoCart={onAddtoCart}
                             />

@@ -2,7 +2,9 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-const uploadDir = path.join(__dirname, "../uploads");
+const uploadDir = path.resolve(
+    process.env.UPLOAD_DIR || path.join(__dirname, "../uploads")
+);
 
 // Create uploads folder if it doesn't exist
 if (!fs.existsSync(uploadDir)) {
