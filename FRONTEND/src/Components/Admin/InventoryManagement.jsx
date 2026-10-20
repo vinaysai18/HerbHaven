@@ -142,7 +142,7 @@ export default function InventoryManagement() {
 
   return (
     <main className="inventory-page">
-      <header className="inventory-heading">
+      <div className="inventory-heading">
         <div>
           <p className="inventory-eyebrow">HERBHAVEN ADMIN PANEL</p>
           <h1>Inventory Management</h1>
@@ -151,7 +151,7 @@ export default function InventoryManagement() {
         <button type="button" onClick={loadInventory} disabled={loading}>
           {loading ? "Loading..." : "Refresh"}
         </button>
-      </header>
+      </div>
 
       <section className="inventory-summary" aria-label="Inventory summary">
         <article><span>Total products</span><strong>{summary.totalProducts}</strong></article>
